@@ -161,13 +161,6 @@ public interface MindmapsTransaction {
      */
     Concept getConceptBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Concept in the graph may be holding.
-     * @return The Concepts holding the provided value or an empty collection if no such Concept exists.
-     */
-    <V> Collection<Concept> getConceptsByValue(V value);
-
     //------------------------------------- Type
     /**
      *
@@ -182,13 +175,6 @@ public interface MindmapsTransaction {
      * @return The Type with the provided Id or null if no such Type exists.
      */
     Type getTypeBySubject(String subject);
-
-    /**
-     *
-     * @param value A value which a Type in the graph may be holding.
-     * @return The Entities holding the provided value or an empty collection if no such Type exists.
-     */
-    Collection<Type> getTypesByValue(String value);
 
     //------------------------------------- Instance
     /**
@@ -205,15 +191,6 @@ public interface MindmapsTransaction {
      */
     Instance getInstanceBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Instance in the graph may be holding.
-     * @param <V> The data type of the value. Supported types include: String, Long, Double, and Boolean.
-     * @return The Entities holding the provided value or an empty collection if no such Instance exists.
-     */
-    <V> Collection<Instance> getInstancesByValue(V value);
-
-
     //------------------------------------- Entity
     /**
      *
@@ -229,12 +206,6 @@ public interface MindmapsTransaction {
      */
     Entity getEntityBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Entity in the graph may be holding.
-     * @return The Entities holding the provided value or an empty collection if no such Entity exists.
-     */
-    Collection<Entity> getEntitiesByValue(String value);
     //------------------------------------- Resource
     /**
      *
@@ -275,12 +246,6 @@ public interface MindmapsTransaction {
      */
     Rule getRuleBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Rule in the graph may be holding.
-     * @return The Rules holding the provided value or an empty collection if no such Rule exists.
-     */
-    Collection<Rule> getRulesByValue(String value);
     //------------------------------------- Concept Type
     /**
      *
@@ -296,12 +261,6 @@ public interface MindmapsTransaction {
      */
     EntityType getEntityTypeBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Entity Type  in the graph may be holding.
-     * @return The Entity Types holding the provided value or an empty collection if no such Entity Type  exists.
-     */
-    Collection<EntityType> getEntityTypesByValue(String value);
     //------------------------------------- Relation Type
     /**
      *
@@ -317,12 +276,6 @@ public interface MindmapsTransaction {
      */
     RelationType getRelationTypeBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Relation Type in the graph may be holding.
-     * @return The Relation Types holding the provided value or an empty collection if no such Relation Type exists.
-     */
-    Collection<RelationType> getRelationTypesByValue(String value);
     //------------------------------------- Resource Type
     /**
      *
@@ -340,13 +293,6 @@ public interface MindmapsTransaction {
      */
     <V> ResourceType<V> getResourceTypeBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Resource Type in the graph may be holding.
-     * @param <V> The data type of the value. Supported types include: String, Long, Double, and Boolean.
-     * @return The Resource Types holding the provided value or an empty collection if no such Resource Type exists.
-     */
-    <V> Collection<ResourceType<V>> getResourceTypesByValue(String value);
     //------------------------------------- Role Type
     /**
      *
@@ -362,12 +308,6 @@ public interface MindmapsTransaction {
      */
     RoleType getRoleTypeBySubject(String subject);
 
-    /**
-     *
-     * @param value A value which a Role Type in the graph may be holding.
-     * @return The Role Types holding the provided value or an empty collection if no such Role Type exists.
-     */
-    Collection<RoleType> getRoleTypesByValue(String value);
     //------------------------------------- Rule Type
     /**
      *
@@ -382,13 +322,6 @@ public interface MindmapsTransaction {
      * @return The Rule Type with the provided Id or null if no such Rule Type  exists.
      */
     RuleType getRuleTypeBySubject(String subject);
-
-    /**
-     *
-     * @param value A value which a Rule Type in the graph may be holding.
-     * @return The Rule Types holding the provided value or an empty collection if no such Rule Type exists.
-     */
-    Collection<RuleType> getRuleTypesByValue(String value);
 
     //------------------------------------- Relationship Handling ----------------------------------
     /**

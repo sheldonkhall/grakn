@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -70,13 +69,6 @@ public class MovieGraphFactoryTest {
     public void testGraphHasTvShow() {
         EntityType tvShow = dao.getEntityType("tv-show");
         assertTrue(tvShow.superType().equals(dao.getEntityType("production")));
-    }
-
-    @Test
-    public void testGraphHasGodfather() {
-        Collection<Entity> concepts = dao.getEntitiesByValue("Godfather");
-        assertEquals(1, concepts.size());
-        assertEquals("Godfather", concepts.iterator().next().getId());
     }
 
     @Test
