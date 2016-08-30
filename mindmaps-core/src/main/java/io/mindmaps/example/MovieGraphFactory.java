@@ -27,7 +27,6 @@ import io.mindmaps.core.model.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.UUID;
 
 /**
  * A class which loads sample data into a mindmaps graph
@@ -276,7 +275,7 @@ public class MovieGraphFactory {
     }
 
     private static <D> void putResource(Instance instance, ResourceType<D> resourceType, D resource) {
-        Resource resourceInstance = mindmapsTransaction.putResource(UUID.randomUUID().toString(), resourceType).setValue(resource);
+        Resource resourceInstance = mindmapsTransaction.putResource(resource, resourceType);
 
         RoleType owner = mindmapsTransaction.putRoleType("has-" + resourceType.getId() + "-owner");
         RoleType value = mindmapsTransaction.putRoleType("has-" + resourceType.getId() + "-value");
