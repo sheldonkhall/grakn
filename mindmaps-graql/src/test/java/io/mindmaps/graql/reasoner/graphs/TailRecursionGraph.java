@@ -20,7 +20,6 @@ package io.mindmaps.graql.reasoner.graphs;
 
 import io.mindmaps.MindmapsTransaction;
 import io.mindmaps.core.model.EntityType;
-import io.mindmaps.core.model.Instance;
 import io.mindmaps.core.model.RelationType;
 import io.mindmaps.core.model.RoleType;
 
@@ -41,10 +40,10 @@ public class TailRecursionGraph extends GenericGraph{
         EntityType bEntity = mindmaps.getEntityType("b-entity");
         RelationType Q = mindmaps.getRelationType("Q");
 
-        putEntity(aEntity, "a0");
+        mindmaps.putEntity("a0", aEntity);
         for(int i = 1 ; i <= m ;i++)
             for(int j = 1 ; j <= n ;j++)
-                putEntity(bEntity, "b" + i + j);
+                mindmaps.putEntity("b" + i + j, bEntity);
 
         for (int j = 1; j <= n; j++) {
 
@@ -58,9 +57,5 @@ public class TailRecursionGraph extends GenericGraph{
             }
         }
 
-    }
-
-    private static Instance putEntity(EntityType type, String name) {
-        return mindmaps.putEntity(name.replaceAll(" ", "-").replaceAll("\\.", ""), type).setValue(name);
     }
 }

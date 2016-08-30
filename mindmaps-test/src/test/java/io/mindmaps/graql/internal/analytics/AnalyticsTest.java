@@ -41,9 +41,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -571,8 +569,7 @@ public class AnalyticsTest {
         RelationType hasResource = transaction.putRelationType(GraqlType.HAS_RESOURCE.getId(Analytics.degree))
                 .hasRole(degreeOwner).hasRole(degreeValue);
         ResourceType<Long> decoyResourceType = transaction.putResourceType("decoy-resource", Data.LONG).playsRole(degreeValue);
-        Resource<Long> decoyResource = transaction.putResource(UUID.randomUUID().toString(),decoyResourceType);
-        decoyResource.setValue(100L);
+        Resource<Long> decoyResource = transaction.putResource(100L, decoyResourceType);
         transaction.addRelation(hasResource).putRolePlayer(degreeOwner,coco).putRolePlayer(degreeValue,decoyResource);
         animal.playsRole(degreeOwner);
 

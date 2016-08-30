@@ -1,0 +1,72 @@
+2016/08/31 10:06:02:: -- NEW EXCEPTION ---
+2016/08/31 10:06:02:: INPUT: insert id ?Cdcs;w4. '' ervalue;
+2016/08/31 10:06:02:: MESSAGE: Illegal argument exception caused by [syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+          ^
+token recognition error at: '?'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+           ^
+mismatched input 'Cdcs' expecting STRING
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                  ^
+token recognition error at: '.'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                    ^
+no viable alternative at input '''']
+2016/08/31 10:06:08:: -- NEW EXCEPTION ---
+2016/08/31 10:06:08:: INPUT: insert id ?Cdcs;w4. '' ervalue;
+2016/08/31 10:06:08:: MESSAGE: Illegal argument exception caused by [syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+          ^
+token recognition error at: '?'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+           ^
+mismatched input 'Cdcs' expecting STRING
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                  ^
+token recognition error at: '.'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                    ^
+no viable alternative at input '''']
+2016/08/31 10:11:32:: -- NEW EXCEPTION ---
+2016/08/31 10:11:32:: INPUT: insert id ?Cdcs;w4. '' ervalue;
+2016/08/31 10:11:32:: MESSAGE: Illegal argument exception caused by [syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+          ^
+token recognition error at: '?'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+           ^
+mismatched input 'Cdcs' expecting STRING
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                  ^
+token recognition error at: '.'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                    ^
+no viable alternative at input '''']
+2016/08/31 10:11:37:: -- NEW EXCEPTION ---
+2016/08/31 10:11:37:: INPUT: insert id ?Cdcs;w4. '' ervalue;
+2016/08/31 10:11:37:: MESSAGE: Illegal argument exception caused by [syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+          ^
+token recognition error at: '?'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+           ^
+mismatched input 'Cdcs' expecting STRING
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                  ^
+token recognition error at: '.'
+syntax error at line 1: 
+insert id ?Cdcs;w4. '' ervalue;
+                    ^
+no viable alternative at input '''']

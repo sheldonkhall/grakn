@@ -115,10 +115,10 @@ public class GraqlShellTest {
 
     @Test
     public void testMatchQuery() throws IOException {
-        String[] result = testShell("match $x isa type\nexit").split("\r\n?|\n");
+        String[] result = testShell("match $x isa concept-type\nexit").split("\r\n?|\n");
 
         // Make sure we find a few results (don't be too fussy about the output here)
-        assertEquals(">>> match $x isa type", result[4]);
+        assertEquals(">>> match $x isa concept-type", result[4]);
         assertTrue(result.length > 5);
     }
 
@@ -175,7 +175,7 @@ public class GraqlShellTest {
 
     @Test
     public void testAutocompleteFill() throws IOException {
-        String result = testShell("match $x isa typ\t\n");
+        String result = testShell("match $x isa concept-typ\t\n");
         assertThat(result, containsString("\"relation-type\""));
     }
 

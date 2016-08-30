@@ -20,7 +20,6 @@ package io.mindmaps.graql;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.sun.corba.se.impl.util.Version;
 import io.mindmaps.MindmapsTransaction;
 import io.mindmaps.core.MindmapsGraph;
 import io.mindmaps.core.implementation.exception.InvalidConceptTypeException;
@@ -33,6 +32,7 @@ import io.mindmaps.graql.internal.parser.MatchQueryPrinter;
 import io.mindmaps.graql.internal.shell.ErrorMessage;
 import io.mindmaps.graql.internal.shell.GraQLCompleter;
 import io.mindmaps.graql.internal.shell.ShellCommandCompleter;
+import io.mindmaps.graql.internal.shell.Version;
 import jline.console.ConsoleReader;
 import jline.console.completer.AggregateCompleter;
 import jline.console.history.FileHistory;

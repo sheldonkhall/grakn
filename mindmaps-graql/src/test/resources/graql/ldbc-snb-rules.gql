@@ -22,21 +22,21 @@ rhs {match ($x, $y) isa membership};
 
 "R4" isa inference-rule,
 lhs {match $x isa person;
-$t1 isa tag;$t1 value 'Ennio_Morricone';
-$t2 isa tag;$t2 value 'John_Wayne';
+$t1 isa tag;$t1 id 'Ennio Morricone';
+$t2 isa tag;$t2 id 'John Wayne';
 ($x, $t1) isa tagging;
 ($x, $t2) isa tagging;
 $y isa product;
-$y value 'The Good, the Bad and the Ugly';
+$y has name 'The Good, the Bad and the Ugly';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R5" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag;{$t value 'Ozzy_Osbourne'} or {$t value 'Rising_Force'};
+$t isa tag;{$t has name 'Ozzy_Osbourne'} or {$t has name 'Rising_Force'};
 ($x, $t) isa tagging;
 $y isa product;
-{$y value 'Ozzy Osbourne - Blizzard of Oz'} or {$y value 'Fender Stratocaster'};
+{$y has name 'Ozzy Osbourne - Blizzard of Oz'} or {$y has name 'Fender Stratocaster'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
@@ -44,24 +44,24 @@ rhs {match ($x, $y) isa recommendation};
 lhs {match $x isa person;
 $x has gender 'male';$x has age >=18;
 $y isa product;$y has min-age >=18;
-$z isa country;$z value 'Italy';
+$z isa country;$z has name 'Italy';
 ($y, $z) isa made-in;
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R7" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag;{$t value 'Ludwig_van_Beethoven'} or {$t value 'Johann_Sebastian_Bach'} or {$t value 'Wolfgang_Amadeus_Mozart'};
+$t isa tag;{$t has name 'Ludwig_van_Beethoven'} or {$t has name 'Johann_Sebastian_Bach'} or {$t has name 'Wolfgang_Amadeus_Mozart'};
 ($x, $t) isa tagging;
-$y isa product, value 'Chopin - Nocturnes';
+$y isa product, has name 'Chopin - Nocturnes';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R8" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag;$t value 'Roger_Waters';
+$t isa tag;$t has name 'Roger_Waters';
 ($x, $t) isa tagging;
-$y isa product, value 'Pink Floyd - The Wall';
+$y isa product, has name 'Pink Floyd - The Wall';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
@@ -73,139 +73,139 @@ rhs {match ($x, $y) isa recommendation};
 #lhs {select $x, $y where
 #$x isa person;$t isa tag;
 #($x, $t) isa tagging;
-#$tt isa category;$tt value 'Writer';
+#$tt isa category;$tt has name 'Writer';
 #($t, $tt) isa grouping;
 #$y isa product;
-#$yt isa category;$yt value 'book';
+#$yt isa category;$yt has name 'book';
 #($y, $yt) isa typing},
 #rhs {select $x, $y where
 #($x, $y) isa recommendation};
 
 "R10" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'H._G._Wells';
+$t isa tag, has name 'H._G._Wells';
 ($x, $t) isa tagging;
-$y isa product, value 'The War of the Worlds';
+$y isa product, has name 'The War of the Worlds';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R11" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Fyodor_Dostoyevsky';
+$t isa tag, has name 'Fyodor_Dostoyevsky';
 ($x, $t) isa tagging;
-$y isa product, value 'Crime and Punishment';
+$y isa product, has name 'Crime and Punishment';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R12" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'George_Orwell';
+$t isa tag, has name 'George_Orwell';
 ($x, $t) isa tagging;
-$y isa product, value 'Animal Farm';
+$y isa product, has name 'Animal Farm';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R13" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Lewis_Carroll';
+$t isa tag, has name 'Lewis_Carroll';
 ($x, $t) isa tagging;
-$y isa product, value 'Alice\'s Adventures in Wonderland';
+$y isa product, has name 'Alice\'s Adventures in Wonderland';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R14" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Agatha_Christie';
+$t isa tag, has name 'Agatha_Christie';
 ($x, $t) isa tagging;
-$y isa product, value 'Murder on the Orient Express';
+$y isa product, has name 'Murder on the Orient Express';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R15" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Hans_Christian_Andersen';
+$t isa tag, has name 'Hans_Christian_Andersen';
 ($x, $t) isa tagging;
-$y isa product, value 'Fairy Tales';
+$y isa product, has name 'Fairy Tales';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R16" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Terry_Pratchett';
+$t isa tag, has name 'Terry_Pratchett';
 ($x, $t) isa tagging;
-$y isa product, value 'The Colour of Magic';
+$y isa product, has name 'The Colour of Magic';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R17" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'P._G._Wodehouse';
+$t isa tag, has name 'P._G._Wodehouse';
 ($x, $t) isa tagging;
-$y isa product, value 'My Man Jeeves';
+$y isa product, has name 'My Man Jeeves';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R18" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Oscar_Wilde';
+$t isa tag, has name 'Oscar_Wilde';
 ($x, $t) isa tagging;
-$y isa product, value 'The Picture of Dorian Gray';
+$y isa product, has name 'The Picture of Dorian Gray';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R19" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'J._R._R._Tolkien';
+$t isa tag, has name 'J._R._R._Tolkien';
 ($x, $t) isa tagging;
-$y isa product, value 'The Lord of the Rings';
+$y isa product, has name 'The Lord of the Rings';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R20" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'J._K._Rowling';
+$t isa tag, has name 'J._K._Rowling';
 ($x, $t) isa tagging;
-$y isa product, value 'Harry Potter';
+$y isa product, has name 'Harry Potter';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R21" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Arthur_Conan_Doyle';
+$t isa tag, has name 'Arthur_Conan_Doyle';
 ($x, $t) isa tagging;
-$y isa product, value 'Stories of Sherlock Holmes';
+$y isa product, has name 'Stories of Sherlock Holmes';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R22" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Ernest_Hemingway';
+$t isa tag, has name 'Ernest_Hemingway';
 ($x, $t) isa tagging;
-$y isa product, value 'For Whom the Bell Tolls';
+$y isa product, has name 'For Whom the Bell Tolls';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R23" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'John_Steinbeck';
+$t isa tag, has name 'John_Steinbeck';
 ($x, $t) isa tagging;
-$y isa product, value 'Of Mice and Men';
+$y isa product, has name 'Of Mice and Men';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R24" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Franz_Kafka';
+$t isa tag, has name 'Franz_Kafka';
 ($x, $t) isa tagging;
-$y isa product, value 'Stories of The Trial';
+$y isa product, has name 'Stories of The Trial';
 select $x, $y },
 rhs {match ($x, $y) isa recommendation};
 
 "R25" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Johann_Wolfgang_von_Goethe';
+$t isa tag, has name 'Johann_Wolfgang_von_Goethe';
 ($x, $t) isa tagging;
-$y isa product, value 'Faust';
+$y isa product, has name 'Faust';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
@@ -215,58 +215,58 @@ rhs {match ($x, $y) isa recommendation};
 
 "R26" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Ozzy_Osbourne';
+$t isa tag, has name 'Ozzy_Osbourne';
 ($x, $t) isa tagging;
-$y isa tag, value 'Black Sabbath',
+$y isa tag, has name 'Black Sabbath',
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R27" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag;{$t value 'Paul_McCartney'} or {$t value 'George_Harrison'};
+$t isa tag;{$t has name 'Paul_McCartney'} or {$t has name 'George_Harrison'};
 ($x, $t) isa tagging;
-$y isa tag, value 'The Beatles';
+$y isa tag, has name 'The Beatles';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R28" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Roger_Waters';
+$t isa tag, has name 'Roger_Waters';
 ($x, $t) isa tagging;
-$y isa tag, value 'Pink Floyd';
+$y isa tag, has name 'Pink Floyd';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R29" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Keith_Richards';
+$t isa tag, has name 'Keith_Richards';
 ($x, $t) isa tagging;
-$y isa tag, value 'Rolling Stones';
+$y isa tag, has name 'Rolling Stones';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R30" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Paul_Simon';
+$t isa tag, has name 'Paul_Simon';
 ($x, $t) isa tagging;
-$y isa tag, value 'Simon and Garfunkel';
+$y isa tag, has name 'Simon and Garfunkel';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R31" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Eric_Clapton';
+$t isa tag, has name 'Eric_Clapton';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Cream'} or {$y value 'The Yardbirds'};
+{$y has name 'Cream'} or {$y has name 'The Yardbirds'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R32" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Bob_Marley';
+$t isa tag, has name 'Bob_Marley';
 ($x, $t) isa tagging;
-$y isa tag, value 'Bob Marley and the Wailers';
+$y isa tag, has name 'Bob Marley and the Wailers';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
@@ -276,64 +276,64 @@ rhs {match ($x, $y) isa recommendation};
 
 "R33" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Master_of_Puppets';
+$t isa tag, has name 'Master_of_Puppets';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Megadeth'} or {$y value 'Slayer'};
+{$y has name 'Megadeth'} or {$y has name 'Slayer'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R34" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Far_Beyond_Driven';
+$t isa tag, has name 'Far_Beyond_Driven';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Pantera'} or {$y value 'Superjoint Ritual'};
+{$y has name 'Pantera'} or {$y has name 'Superjoint Ritual'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R35" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Hybrid_Theory';
+$t isa tag, has name 'Hybrid_Theory';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Linkin Park'} or {$y value 'Limp Bizkit'};
+{$y has name 'Linkin Park'} or {$y has name 'Limp Bizkit'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R36" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Powerslave';
+$t isa tag, has name 'Powerslave';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Iron Maiden'} or {$y value 'Judas Priest'};
+{$y has name 'Iron Maiden'} or {$y has name 'Judas Priest'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R37" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Enter_the_Chicken';
+$t isa tag, has name 'Enter_the_Chicken';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Buckethead'} or {$y value 'Primus'};
+{$y has name 'Buckethead'} or {$y has name 'Primus'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R38" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Rising_Force';
+$t isa tag, has name 'Rising_Force';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Yngwie Malmsteen'} or {$y value 'Steve Vai'} or {$y value 'Cacophony'};
+{$y has name 'Yngwie Malmsteen'} or {$y has name 'Steve Vai'} or {$y has name 'Cacophony'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R39" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Led_Zeppelin_IV';
+$t isa tag, has name 'Led_Zeppelin_IV';
 ($x, $t) isa tagging;
 $y isa tag;
-{$y value 'Led Zeppelin'} or {$y value 'Deep Purple'};
+{$y has name 'Led Zeppelin'} or {$y has name 'Deep Purple'};
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
@@ -343,41 +343,41 @@ rhs {match ($x, $y) isa recommendation};
 
 "R40" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'All_Along_the_Watchtower';
+$t isa tag, has name 'All_Along_the_Watchtower';
 ($x, $t) isa tagging;
-$y isa tag, value 'Jimi Hendrix';
+$y isa tag, has name 'Jimi Hendrix';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R41" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'These_Are_the_Days_of_Our_Lives';
+$t isa tag, has name 'These_Are_the_Days_of_Our_Lives';
 ($x, $t) isa tagging;
-$y isa tag, value 'Queen';
+$y isa tag, has name 'Queen';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R42" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Come_Together';
+$t isa tag, has name 'Come_Together';
 ($x, $t) isa tagging;
-$y isa tag, value 'The Beatles';
+$y isa tag, has name 'The Beatles';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R43" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Smoke_on_the_Water';
+$t isa tag, has name 'Smoke_on_the_Water';
 ($x, $t) isa tagging;
-$y isa tag, value 'Deep Purple';
+$y isa tag, has name 'Deep Purple';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R44" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Immigrant_Song';
+$t isa tag, has name 'Immigrant_Song';
 ($x, $t) isa tagging;
-$y isa tag, value 'Led Zeppelin';
+$y isa tag, has name 'Led Zeppelin';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
@@ -387,71 +387,71 @@ rhs {match ($x, $y) isa recommendation};
 
 "R45" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Claude_Monet';
+$t isa tag, has name 'Claude_Monet';
 ($x, $t) isa tagging;
-$y isa product, value 'Claude Monet - The Water Lillies';
+$y isa product, has name 'Claude Monet - The Water Lillies';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R46" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Rembrandt';
+$t isa tag, has name 'Rembrandt';
 ($x, $t) isa tagging;
-$y isa product, value 'Rembrandt - The Night Watch';
+$y isa product, has name 'Rembrandt - The Night Watch';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R47" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Leonardo_da_Vinci';
+$t isa tag, has name 'Leonardo_da_Vinci';
 ($x, $t) isa tagging;
-$y isa product, value 'Leonardo da Vinci - Mona Lisa';
+$y isa product, has name 'Leonardo da Vinci - Mona Lisa';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R48" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Raphael';
+$t isa tag, has name 'Raphael';
 ($x, $t) isa tagging;
-$y isa product, value 'Raphael - The Madonna of the Pinks';
+$y isa product, has name 'Raphael - The Madonna of the Pinks';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R49" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Titian';
+$t isa tag, has name 'Titian';
 ($x, $t) isa tagging;
-$y isa product, value 'Titian - Bacchus and Ariadne';
+$y isa product, has name 'Titian - Bacchus and Ariadne';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R50" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Vincent_van_Gogh';
+$t isa tag, has name 'Vincent_van_Gogh';
 ($x, $t) isa tagging;
-$y isa product, value 'Vincent van Gogh - Sunflowers';
+$y isa product, has name 'Vincent van Gogh - Sunflowers';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R51" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Diego_Rivera';
+$t isa tag, has name 'Diego_Rivera';
 ($x, $t) isa tagging;
-$y isa product, value 'Diego Rivera - Controller of the Universe';
+$y isa product, has name 'Diego Rivera - Controller of the Universe';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R52" isa inference-rule,
 lhs {match $x isa person;
-$t isa tag, value 'Piet_Mondrian';
+$t isa tag, has name 'Piet_Mondrian';
 ($x, $t) isa tagging;
-$y isa product, value 'Piet Mondrian - Gray Tree';
+$y isa product, has name 'Piet Mondrian - Gray Tree';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};
 
 "R53" isa inference-rule,
-lhs {match $x isa person;$t isa tag, value 'Michelangelo';
+lhs {match $x isa person;$t isa tag, has name 'Michelangelo';
 ($x, $t) isa tagging;
-$y isa product, value 'Michelangelo - The Last Judgement';
+$y isa product, has name 'Michelangelo - The Last Judgement';
 select $x, $y},
 rhs {match ($x, $y) isa recommendation};

@@ -25,8 +25,6 @@ import io.mindmaps.core.implementation.exception.MindmapsValidationException;
 import io.mindmaps.core.model.*;
 import io.mindmaps.factory.MindmapsTestGraphFactory;
 
-import java.util.UUID;
-
 public class CWGraph {
 
     private static MindmapsTransaction mindmaps;
@@ -102,30 +100,30 @@ public class CWGraph {
                 .hasRole(payee).hasRole(payer);
 
 
-        person = mindmaps.putEntityType("person").setValue("person")
+        person = mindmaps.putEntityType("person")
                 .playsRole(seller).playsRole(payee).playsRole(hasResourceTarget);
-        criminal = mindmaps.putEntityType("criminal").setValue("criminal").superType(person);
+        criminal = mindmaps.putEntityType("criminal").superType(person);
 
         //device = mindmaps.putEntityType("device").setValue("device");
-        weapon = mindmaps.putEntityType("weapon").setValue("weapon")
+        weapon = mindmaps.putEntityType("weapon")
                 .playsRole(transactionItem).playsRole(ownedItem).playsRole(hasResourceTarget);//.superEntity(device);
-        rocket = mindmaps.putEntityType("rocket").setValue("rocket")
+        rocket = mindmaps.putEntityType("rocket")
                 .playsRole(hasResourceTarget).playsRole(transactionItem).playsRole(ownedItem);
-        missile = mindmaps.putEntityType("missile").setValue("missile").superType(weapon)
+        missile = mindmaps.putEntityType("missile").superType(weapon)
                 .playsRole(transactionItem).playsRole(hasResourceTarget);
 
 
-        country = mindmaps.putEntityType("country").setValue("country")
+        country = mindmaps.putEntityType("country")
                 .playsRole(buyer).playsRole(owner).playsRole(enemyTarget).playsRole(payer).playsRole(enemySource).playsRole(hasResourceTarget);
 
 
     }
 
     private static void buildInstances() {
-        colonelWest = putEntity(person, "colonelWest");
-        Nono = putEntity(country, "Nono");
-        America = putEntity(country, "America");
-        Tomahawk = putEntity(rocket, "Tomahawk");
+        colonelWest = mindmaps.putEntity("colonelWest", person);
+        Nono = mindmaps.putEntity("Nono", country);
+        America = mindmaps.putEntity("America", country);
+        Tomahawk = mindmaps.putEntity("Tomahawk", rocket);
 
         putResource(colonelWest, nationality, "American");
         putResource(Tomahawk, propulsion, "gsp");
@@ -213,12 +211,8 @@ public class CWGraph {
 
     }
 
-    private static Instance putEntity(EntityType type, String name) {
-        return mindmaps.putEntity(name.replaceAll(" ", "-").replaceAll("\\.", ""), type).setValue(name);
-    }
-
     private static <T> void putResource(Instance instance, ResourceType<T> resourceType, T resource) {
-        Resource resourceInstance = mindmaps.putResource(UUID.randomUUID().toString(), resourceType).setValue(resource);
+        Resource resourceInstance = mindmaps.putResource(resource, resourceType);
 
         mindmaps.addRelation(hasResource)
                 .putRolePlayer(hasResourceTarget, instance)

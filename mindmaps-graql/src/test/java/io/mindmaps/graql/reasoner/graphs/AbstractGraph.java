@@ -64,20 +64,20 @@ public class AbstractGraph {
         RELRoleB = mindmaps.putRoleType("REL-roleB");
         REL = mindmaps.putRelationType("REL").hasRole(RELRoleA).hasRole(RELRoleB);
 
-        P = mindmaps.putEntityType("P").setValue("P").playsRole(RELRoleA).playsRole(RELRoleB);
-        Q = mindmaps.putEntityType("Q").setValue("Q").playsRole(RELRoleB).playsRole(RELRoleA);
-        p = mindmaps.putEntityType("p").setValue("p").playsRole(relRoleA).playsRole(RELRoleA);
-        q = mindmaps.putEntityType("q").setValue("q").playsRole(relRoleB).playsRole(RELRoleB);
-        r = mindmaps.putEntityType("r").setValue("r").playsRole(relRoleA).playsRole(RELRoleA);
-        s = mindmaps.putEntityType("s").setValue("s").playsRole(relRoleB).playsRole(RELRoleB);
-        u = mindmaps.putEntityType("u").setValue("u").playsRole(relRoleA).playsRole(RELRoleA);
-        t = mindmaps.putEntityType("t").setValue("t").playsRole(relRoleB).playsRole(RELRoleB);
+        P = mindmaps.putEntityType("P").playsRole(RELRoleA).playsRole(RELRoleB);
+        Q = mindmaps.putEntityType("Q").playsRole(RELRoleB).playsRole(RELRoleA);
+        p = mindmaps.putEntityType("p").playsRole(relRoleA).playsRole(RELRoleA);
+        q = mindmaps.putEntityType("q").playsRole(relRoleB).playsRole(RELRoleB);
+        r = mindmaps.putEntityType("r").playsRole(relRoleA).playsRole(RELRoleA);
+        s = mindmaps.putEntityType("s").playsRole(relRoleB).playsRole(RELRoleB);
+        u = mindmaps.putEntityType("u").playsRole(relRoleA).playsRole(RELRoleA);
+        t = mindmaps.putEntityType("t").playsRole(relRoleB).playsRole(RELRoleB);
     }
 
     private static void buildInstances() {
-        instanceU = putEntity(u, "instanceU");
-        instanceT = putEntity(t, "instanceT");
-        instanceP = putEntity(P, "instanceP");
+        instanceU = mindmaps.putEntity("instanceU", u);
+        instanceT = mindmaps.putEntity("instanceT", t);
+        instanceP = mindmaps.putEntity("instanceP", P);
     }
 
     private static void buildRelations() {
@@ -125,10 +125,6 @@ public class AbstractGraph {
         String R5_RHS = "match $x isa r";
         r5.setLHS(R5_LHS);
         r5.setRHS(R5_RHS);
-    }
-
-    private static Instance putEntity(EntityType type, String name) {
-        return mindmaps.putEntity(name.replaceAll(" ", "-").replaceAll("\\.", ""), type).setValue(name);
     }
 
 }

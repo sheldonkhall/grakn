@@ -5,19 +5,16 @@ insert
 "Cambridge" isa city;
 "London" isa city;
 "UK" isa country;
-"country-81" isa country, value "Italy";
+"country-81" isa country, has name "Italy";
 "Europe" isa continent;
-"Alice" isa person, value "Alice";
-"Bob" isa person, value "Bob";
-"age21" isa age, value 21;
-"male" isa gender, value "male";
-(person-resource-owner Bob, person-resource-value age21) isa person-resource;
-(person-resource-owner Bob, person-resource-value "male") isa person-resource;
-"Charlie" isa person, value "Charlie";
-"Denis" isa person, value "Denis";
-"Frank" isa person, value "Frank";
-"Gary" isa person, value "Gary";
-"Karl Fischer" isa person, value "Karl Fischer";
+"Alice" isa person;
+"Bob" isa person;
+"Bob" has age 21, has name "Bob", has gender "male";
+"Charlie" isa person, has name "Charlie";
+"Denis" isa person, has name "Denis";
+"Frank" isa person, has name "Frank";
+"Gary" isa person, has name "Gary";
+"Karl Fischer" isa person, has name "Karl Fischer";
 "forum1" isa forum;
 
 (located-subject 'University of Cambridge', subject-location Cambridge) isa resides;
@@ -27,24 +24,24 @@ insert
 (member-location UK, container-location Europe) isa sublocate;
 (moderator Bob, moderated forum1) isa moderates;
 
-"Ennio Morricone" isa tag, value "Ennio_Morricone";
-"John Wayne" isa tag, value "John_Wayne";
-"Ozzy Osbourne" isa tag, value "Ozzy_Osbourne";
-"Rising Force" isa tag, value "Rising_Force";
-"Terry Pratchett" isa tag, value "Terry_Pratchett";
-"H. G. Wells" isa tag, value "H._G._Wells";
-"Oscar Wilde" isa tag, value "Oscar_Wilde";
-"Johann Wolfgang von Goethe" isa tag, value "Johann_Wolfgang_von_Goethe";
-"Writer" isa category, value "Writer";
+"Ennio Morricone" isa tag, has name "Ennio_Morricone";
+"John Wayne" isa tag, has name "John_Wayne";
+"Ozzy Osbourne" isa tag, has name "Ozzy_Osbourne";
+"Rising Force" isa tag, has name "Rising_Force";
+"Terry Pratchett" isa tag, has name "Terry_Pratchett";
+"H. G. Wells" isa tag, has name "H._G._Wells";
+"Oscar Wilde" isa tag, has name "Oscar_Wilde";
+"Johann Wolfgang von Goethe" isa tag, has name "Johann_Wolfgang_von_Goethe";
+"Writer" isa category;
 (grouped-tag 'Terry Pratchett', tag-group Writer) isa grouping;
 (grouped-tag 'H. G. Wells', tag-group Writer) isa grouping;
 (grouped-tag 'Johann Wolfgang von Goethe', tag-group Writer) isa grouping;
 
-"Johann_Sebastian_Bach" isa tag, value "Johann_Sebastian_Bach";
-"Ludwig_van_Beethoven" isa tag, value "Ludwig_van_Beethoven";
-"Wolfgang_Amadeus_Mozart" isa tag, value "Wolfgang_Amadeus_Mozart";
+"Johann_Sebastian_Bach" isa tag, has name "Johann_Sebastian_Bach";
+"Ludwig_van_Beethoven" isa tag, has name "Ludwig_van_Beethoven";
+"Wolfgang_Amadeus_Mozart" isa tag, has name "Wolfgang_Amadeus_Mozart";
 
-"Roger_Waters" isa tag, value "Roger_Waters";
+"Roger_Waters" isa tag, has name "Roger_Waters";
 
 (tagged-subject Alice, subject-tag 'H. G. Wells') isa tagging;
 (tagged-subject Bob, subject-tag 'Ennio Morricone') isa tagging;

@@ -1,0 +1,35 @@
+current scale - super 10 - nodes 10
+start generate graph 263487002061626
+stop generate graph 263488384959041
+start count 263493403419478
+count: 67
+stop count 263496485634119
+start degree 263496485659336
+stop degree 263499990769980
+start persist degree 263499990799081
+stop persist degree 263505740153719
+start clean graph 263505740182059
+stop clean graph 263505897532226
+current scale - super 10 - nodes 100
+start generate graph 263520641238852
+stop generate graph 263522809993938
+start count 263527826131866
+count: 1076
+stop count 263531777485291
+start degree 263531779335403
+stop degree 263537282610261
+start persist degree 263537282654578
+stop persist degree 263545770271143
+start clean graph 263545772090848
+stop clean graph 263546023402251
+current scale - super 10 - nodes 1000
+start generate graph 263561455634578
+stop generate graph 263622677058675
+start count 263627698890925
+count: 10998
+stop count 263636764778900
+start degree 263636764809565
+stop degree 263651290330910
+start persist degree 263651290353564
+stop persist degree 263676967853598
+start clean graph 263676969710647
