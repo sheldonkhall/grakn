@@ -520,11 +520,18 @@ public class AnalyticsTest {
         // check degrees are correct
         referenceDegrees.entrySet().forEach(entry->{
             Instance instance = transaction.getInstance(entry.getKey());
+
+            Collection<Resource<?>> resources = null;
+
             if (instance.isEntity()) {
-                assertTrue(instance.asEntity().resources().iterator().next().getValue().equals(entry.getValue()));
+                resources = instance.asEntity().resources();
             } else if (instance.isRelation()) {
-                assertTrue(instance.asRelation().resources().iterator().next().getValue().equals(entry.getValue()));
+                resources = instance.asRelation().resources();
             }
+
+            assertFalse(resources.isEmpty());
+
+            assertTrue(resources.iterator().next().getValue().equals(entry.getValue()));
         });
 
         degrees = rt.instances();

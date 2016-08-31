@@ -24,7 +24,6 @@ import io.mindmaps.MindmapsTransaction;
 import io.mindmaps.constants.DataType;
 import io.mindmaps.core.Data;
 import io.mindmaps.core.MindmapsGraph;
-
 import io.mindmaps.core.implementation.exception.MindmapsValidationException;
 import io.mindmaps.core.model.*;
 import io.mindmaps.factory.MindmapsClient;
@@ -32,7 +31,10 @@ import io.mindmaps.graql.internal.GraqlType;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -204,35 +206,42 @@ public class Analytics {
 
     public static void persistResource(MindmapsGraph mindmapsGraph, Vertex vertex,
                                        String resourceName, long value) {
-        MindmapsTransaction transaction = mindmapsGraph.getTransaction();
+        while (true) {
+            MindmapsTransaction transaction = mindmapsGraph.getTransaction();
 
-        ResourceType<Long> resourceType = transaction.getResourceType(resourceName);
-        RoleType resourceOwner = transaction.getRoleType(GraqlType.HAS_RESOURCE_OWNER.getId(resourceName));
-        RoleType resourceValue = transaction.getRoleType(GraqlType.HAS_RESOURCE_VALUE.getId(resourceName));
-        RelationType relationType = transaction.getRelationType(GraqlType.HAS_RESOURCE.getId(resourceName));
+            ResourceType<Long> resourceType = transaction.getResourceType(resourceName);
+            RoleType resourceOwner = transaction.getRoleType(GraqlType.HAS_RESOURCE_OWNER.getId(resourceName));
+            RoleType resourceValue = transaction.getRoleType(GraqlType.HAS_RESOURCE_VALUE.getId(resourceName));
+            RelationType relationType = transaction.getRelationType(GraqlType.HAS_RESOURCE.getId(resourceName));
 
-        Instance instance =
-                transaction.getInstance(vertex.value(DataType.ConceptPropertyUnique.ITEM_IDENTIFIER.name()));
+            Instance instance =
+                    transaction.getInstance(vertex.value(DataType.ConceptPropertyUnique.ITEM_IDENTIFIER.name()));
 
-        //TODO: remove the deletion of resource. This should be done by core.
-        instance.relations(resourceOwner).stream()
-                .filter(relation -> relation.rolePlayers().size() == 2)
-                .filter(relation ->
-                        relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
-                .forEach(relation -> {
-                    relation.rolePlayers().get(resourceValue).delete();
-                    relation.delete();
-                });
+            //TODO: remove the deletion of resource. This should be done by core.
+            instance.relations(resourceOwner).stream()
+                    .filter(relation -> relation.rolePlayers().size() == 2)
+                    .filter(relation ->
+                            relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
+                    .forEach(relation -> {
+                        // relation.rolePlayers().get(resourceValue).delete();
+                        relation.delete();
+                    });
 
-        Resource<Long> resource = transaction.putResource(value, resourceType);
-        transaction.addRelation(relationType)
-                .putRolePlayer(resourceOwner, instance)
-                .putRolePlayer(resourceValue, resource);
+            Resource<Long> resource = transaction.putResource(value, resourceType);
 
-        try {
-            transaction.commit();
-        } catch (MindmapsValidationException e) {
-            e.printStackTrace();
+            transaction.addRelation(relationType)
+                    .putRolePlayer(resourceOwner, instance)
+                    .putRolePlayer(resourceValue, resource);
+
+            try {
+                transaction.commit();
+                break;
+            } catch (MindmapsValidationException e) {
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("RETRYING");
+            }
         }
     }
 
