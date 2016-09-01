@@ -85,8 +85,8 @@ public class ScalingTestIT {
         }
 
         // compute the sample of graph sizes
-        int MAX_SIZE = 10000;
-        int NUM_DIVS = 10;
+        int MAX_SIZE = 2;
+        int NUM_DIVS = 2;
         int REPEAT = 2;
 
         int STEP_SIZE = MAX_SIZE/NUM_DIVS;
@@ -98,7 +98,7 @@ public class ScalingTestIT {
         Map<Integer, Long> scaleToAverageTimeDegree = new HashMap<>();
         Map<Integer, Long> scaleToAverageTimeDegreeAndPersist = new HashMap<>();
 
-        int NUM_SUPER_NODES = 10;
+        int NUM_SUPER_NODES = 1;
 
         // Insert super nodes into graph
         simpleOntology();
@@ -152,27 +152,34 @@ public class ScalingTestIT {
                 computer.degreesAndPersist();
                 stopTime = System.currentTimeMillis();
                 degreeAndPersistTime+=stopTime-startTime;
+                transaction.refresh();
+                superNodes.forEach(
+                        id -> transaction.getEntity(id).resources().forEach(
+                                resource -> System.out.println(resource.getValue())));
+                superNodes.forEach(
+                        id -> transaction.getEntity(id).relations().forEach(
+                                relation -> System.out.println(relation.rolePlayers())));
             }
 
             countTime /= REPEAT*1000;
             degreeTime /= REPEAT*1000;
             degreeAndPersistTime /= REPEAT*1000;
             System.out.println("time to count: "+countTime);
-            scaleToAverageTimeCount.put(graphSize,countTime);
-            System.out.println("time to degrees: "+degreeTime);
-            scaleToAverageTimeDegree.put(graphSize,degreeTime);
-            System.out.println("time to degreesAndPersist: "+degreeAndPersistTime);
+            scaleToAverageTimeCount.put(graphSize, countTime);
+            System.out.println("time to degrees: " + degreeTime);
+            scaleToAverageTimeDegree.put(graphSize, degreeTime);
+            System.out.println("time to degreesAndPersist: " + degreeAndPersistTime);
             scaleToAverageTimeDegreeAndPersist.put(graphSize,degreeAndPersistTime);
         }
 
         writer.println("start clean graph " + System.currentTimeMillis()/1000L + "s");
         writer.flush();
         graph.clear();
-        writer.println("stop clean graph " + System.currentTimeMillis()/1000L + "s");
+        writer.println("stop clean graph " + System.currentTimeMillis() / 1000L + "s");
 
         System.out.println("counts: " + scaleToAverageTimeCount);
-        System.out.println("degrees: " + scaleToAverageTimeCount);
-        System.out.println("degreesAndPersist: " + scaleToAverageTimeCount);
+        System.out.println("degrees: " + scaleToAverageTimeDegree);
+        System.out.println("degreesAndPersist: " + scaleToAverageTimeDegreeAndPersist);
     }
 
     private void addNodes(Set<String> superNodes, int startRange, int endRange) throws MindmapsValidationException, InterruptedException {

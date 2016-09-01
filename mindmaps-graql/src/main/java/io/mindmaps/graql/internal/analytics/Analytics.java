@@ -44,7 +44,7 @@ import static io.mindmaps.constants.DataType.ConceptPropertyUnique.ITEM_IDENTIFI
 
 public class Analytics {
 
-    public static final String keySpace = "mindmapsanalyticstest";
+    public static final String keySpace = "mindmaps";
     public static final String TYPE = "type";
 
     public static final String degree = "degree";
@@ -161,17 +161,13 @@ public class Analytics {
         insertOntology(resourceType, Data.LONG);
         ComputerResult result = computer.compute(new DegreeAndPersistVertexProgram(allTypes));
         result.graph().traversal().V().forEachRemaining(v -> {
-//            System.out.println("v.keys() = " + v.keys());
 
             if (v.keys().contains(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)) {
-                System.out.println("v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID) = " +
-                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID));
 
                 transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
                         v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE()
                         .forEachRemaining(edge -> edge.remove());
                 transaction.getRelation(v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)).delete();
-
 
             }
         });
@@ -237,9 +233,6 @@ public class Analytics {
         //TODO: remove the deletion of resource. This should be done by core.
 
 //        List<Relation> r =
-        instance.relations(resourceOwner).stream()
-                .filter(relation -> relation.rolePlayers().size() == 2)
-                .forEach(relation1 -> System.out.println("\nrelation = " + relation1.rolePlayers()));
 
         List<Relation> relations = instance.relations(resourceOwner).stream()
                 .filter(relation -> relation.rolePlayers().size() == 2)
@@ -247,9 +240,6 @@ public class Analytics {
                         relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
 //                .filter(relation -> relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
                 .collect(Collectors.toList());
-
-        System.out.println();
-        System.out.println("relations.size() = " + relations.size());
 
         if (relations.isEmpty()) {
             Resource<Long> resource = transaction.putResource(value, resourceType);
@@ -278,13 +268,8 @@ public class Analytics {
                 .collect(Collectors.toList());
 
         if (!relations.isEmpty()) {
-            System.out.println();
-            System.out.println("degreeRelations.size() = " + relations.size());
             String oldAssertionId = relations.get(0).getId();
             long oldDegree = (long) relations.get(0).rolePlayers().get(resourceValue).asResource().getValue();
-            System.out.println();
-            System.out.println("oldDegree = " + oldDegree);
-            System.out.println("oldAssertionId = " + oldAssertionId);
 
 //            relations.forEach(relation -> {
 ////                relation.rolePlayers().get(resourceValue).delete();
@@ -334,8 +319,6 @@ public class Analytics {
                         (long) relation.rolePlayers().get(resourceValue).asResource().getValue() == value)
                 .forEach(Concept::delete);
 
-        System.out.println();
-        System.out.println("Deleted Something");
     }
 
     public static String getVertextType(Vertex vertex) {
