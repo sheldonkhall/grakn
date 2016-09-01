@@ -31,10 +31,7 @@ import io.mindmaps.graql.internal.GraqlType;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -162,7 +159,28 @@ public class Analytics {
      */
     private void degreesAndPersist(String resourceType) {
         insertOntology(resourceType, Data.LONG);
-        computer.compute(new DegreeAndPersistVertexProgram(allTypes));
+        ComputerResult result = computer.compute(new DegreeAndPersistVertexProgram(allTypes));
+        result.graph().traversal().V().forEachRemaining(v -> {
+//            System.out.println("v.keys() = " + v.keys());
+
+            if (v.keys().contains(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)) {
+                System.out.println("v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID) = " +
+                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID));
+
+                transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
+                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE()
+                        .forEachRemaining(edge -> edge.remove());
+                transaction.getRelation(v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)).delete();
+
+
+            }
+        });
+
+        try {
+            transaction.commit();
+        } catch (MindmapsValidationException e) {
+            e.printStackTrace();
+        }
     }
 
     public void degreesAndPersist() throws ExecutionException, InterruptedException {
@@ -204,45 +222,120 @@ public class Analytics {
         return Analytics.analyticsElements.contains(getVertextType(vertex));
     }
 
-    public static void persistResource(MindmapsGraph mindmapsGraph, Vertex vertex,
-                                       String resourceName, long value) {
-        while (true) {
-            MindmapsTransaction transaction = mindmapsGraph.getTransaction();
+    public static String persistResource(MindmapsGraph mindmapsGraph, Vertex vertex,
+                                         String resourceName, long value) {
+        MindmapsTransaction transaction = mindmapsGraph.getTransaction();
 
-            ResourceType<Long> resourceType = transaction.getResourceType(resourceName);
-            RoleType resourceOwner = transaction.getRoleType(GraqlType.HAS_RESOURCE_OWNER.getId(resourceName));
-            RoleType resourceValue = transaction.getRoleType(GraqlType.HAS_RESOURCE_VALUE.getId(resourceName));
-            RelationType relationType = transaction.getRelationType(GraqlType.HAS_RESOURCE.getId(resourceName));
+        ResourceType<Long> resourceType = transaction.getResourceType(resourceName);
+        RoleType resourceOwner = transaction.getRoleType(GraqlType.HAS_RESOURCE_OWNER.getId(resourceName));
+        RoleType resourceValue = transaction.getRoleType(GraqlType.HAS_RESOURCE_VALUE.getId(resourceName));
+        RelationType relationType = transaction.getRelationType(GraqlType.HAS_RESOURCE.getId(resourceName));
 
-            Instance instance =
-                    transaction.getInstance(vertex.value(DataType.ConceptPropertyUnique.ITEM_IDENTIFIER.name()));
+        Instance instance =
+                transaction.getInstance(vertex.value(DataType.ConceptPropertyUnique.ITEM_IDENTIFIER.name()));
 
-            //TODO: remove the deletion of resource. This should be done by core.
-            instance.relations(resourceOwner).stream()
-                    .filter(relation -> relation.rolePlayers().size() == 2)
-                    .filter(relation ->
-                            relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
-                    .forEach(relation -> {
-                        // relation.rolePlayers().get(resourceValue).delete();
-                        relation.delete();
-                    });
+        //TODO: remove the deletion of resource. This should be done by core.
 
+//        List<Relation> r =
+        instance.relations(resourceOwner).stream()
+                .filter(relation -> relation.rolePlayers().size() == 2)
+                .forEach(relation1 -> System.out.println("\nrelation = " + relation1.rolePlayers()));
+
+        List<Relation> relations = instance.relations(resourceOwner).stream()
+                .filter(relation -> relation.rolePlayers().size() == 2)
+                .filter(relation -> relation.rolePlayers().containsKey(resourceValue) &&
+                        relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
+//                .filter(relation -> relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
+                .collect(Collectors.toList());
+
+        System.out.println();
+        System.out.println("relations.size() = " + relations.size());
+
+        if (relations.isEmpty()) {
             Resource<Long> resource = transaction.putResource(value, resourceType);
+            if (resource == null) System.out.println("\n=============== shit ==============");
 
             transaction.addRelation(relationType)
                     .putRolePlayer(resourceOwner, instance)
                     .putRolePlayer(resourceValue, resource);
-
-            try {
-                transaction.commit();
-                break;
-            } catch (MindmapsValidationException e) {
-                throw new RuntimeException(e);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("RETRYING");
+            while (true) {
+                try {
+                    transaction.commit();
+                    break;
+                } catch (MindmapsValidationException e) {
+                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("RETRYING");
+                }
             }
+            return null;
         }
+
+        relations = relations.stream()
+                .filter(relation ->
+                        (long) relation.rolePlayers().get(resourceValue).asResource().getValue() != value)
+                .collect(Collectors.toList());
+
+        if (!relations.isEmpty()) {
+            System.out.println();
+            System.out.println("degreeRelations.size() = " + relations.size());
+            String oldAssertionId = relations.get(0).getId();
+            long oldDegree = (long) relations.get(0).rolePlayers().get(resourceValue).asResource().getValue();
+            System.out.println();
+            System.out.println("oldDegree = " + oldDegree);
+            System.out.println("oldAssertionId = " + oldAssertionId);
+
+//            relations.forEach(relation -> {
+////                relation.rolePlayers().get(resourceValue).delete();
+//                relation.delete();
+//                System.out.println("deleted something ...");
+//            });
+
+            while (true) {
+                Resource<Long> resource = transaction.putResource(value, resourceType);
+                if (resource == null) System.out.println("\n=============== shit ==============");
+
+                transaction.addRelation(relationType)
+                        .putRolePlayer(resourceOwner, instance)
+                        .putRolePlayer(resourceValue, resource);
+                try {
+                    transaction.commit();
+                    break;
+                } catch (MindmapsValidationException e) {
+                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("RETRYING");
+                }
+            }
+
+            return oldAssertionId;
+        } else {
+            return null;
+        }
+    }
+
+    public static void deleteOldResourceAssertion(MindmapsGraph mindmapsGraph, Vertex vertex,
+                                                  String resourceName, long value) {
+
+        MindmapsTransaction transaction = mindmapsGraph.getTransaction();
+
+        Instance instance =
+                transaction.getInstance(vertex.value(DataType.ConceptPropertyUnique.ITEM_IDENTIFIER.name()));
+
+        RoleType resourceOwner = transaction.getRoleType(GraqlType.HAS_RESOURCE_OWNER.getId(resourceName));
+        RoleType resourceValue = transaction.getRoleType(GraqlType.HAS_RESOURCE_VALUE.getId(resourceName));
+
+        instance.relations(resourceOwner).stream()
+                .filter(relation -> relation.rolePlayers().size() == 2)
+                .filter(relation -> relation.rolePlayers().containsKey(resourceValue) &&
+                        relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName) &&
+                        (long) relation.rolePlayers().get(resourceValue).asResource().getValue() == value)
+                .forEach(Concept::delete);
+
+        System.out.println();
+        System.out.println("Deleted Something");
     }
 
     public static String getVertextType(Vertex vertex) {

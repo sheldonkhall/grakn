@@ -306,7 +306,9 @@ public class AnalyticsTest {
         long numVertices = 0;
 
         // compute again and again ...
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
+            System.out.println();
+            System.out.println("i = " + i);
             computer.degreesAndPersist();
 
             correctDegrees.entrySet().forEach(degree -> {
@@ -331,6 +333,9 @@ public class AnalyticsTest {
 
         // compute degrees on all types, again and again ...
         for (int i = 0; i < 3; i++) {
+            System.out.println();
+            System.out.println("i = " + i);
+
             computer = new Analytics();
             computer.degreesAndPersist();
 
@@ -346,6 +351,7 @@ public class AnalyticsTest {
                     resources = instance.asRelation().resources();
                 }
                 assert resources != null;
+                assert !resources.isEmpty();
                 assertEquals(resources.iterator().next().getValue(), degree.getValue());
             });
 
