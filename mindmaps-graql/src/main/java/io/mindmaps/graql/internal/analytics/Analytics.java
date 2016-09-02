@@ -162,35 +162,7 @@ public class Analytics {
      */
     private void degreesAndPersist(String resourceType) {
         insertOntology(resourceType, Data.LONG);
-        ComputerResult result = computer.compute(new DegreeAndPersistVertexProgram(allTypes));
-
-        result.graph().traversal().V().forEachRemaining(v -> {
-
-            if (v.keys().contains(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)) {
-
-//                transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
-//                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE()
-//                        .forEachRemaining(edge -> edge.remove());
-//                List<Edge> assertions = transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
-//                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE().toList();
-//                Set<String> ids = new HashSet<>();
-//                assertions.forEach(edge -> ids.add(edge.id().toString()));
-
-                Relation relation = transaction.getRelation(v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID));
-                relation.delete();
-//                transaction.refresh();
-//                ids.forEach(id -> {
-//                    transaction.getTinkerTraversal().E(Long.valueOf(id));
-//                });
-            }
-        });
-
-        try {
-            transaction.commit();
-        } catch (MindmapsValidationException e) {
-            e.printStackTrace();
-        }
-
+        computer.compute(new DegreeAndPersistVertexProgram(allTypes));
     }
 
     public void degreesAndPersist() throws ExecutionException, InterruptedException {
@@ -314,7 +286,7 @@ public class Analytics {
     }
 
     public static void deleteOldResourceAssertion(MindmapsGraph mindmapsGraph, Vertex vertex,
-                                                  String resourceName, long value) {
+                                                  String resourceName, long value) throws MindmapsValidationException {
 
         MindmapsTransaction transaction = mindmapsGraph.getTransaction();
 
@@ -330,6 +302,7 @@ public class Analytics {
                         relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName) &&
                         (long) relation.rolePlayers().get(resourceValue).asResource().getValue() == value)
                 .forEach(Concept::delete);
+        transaction.commit();
 
     }
 
