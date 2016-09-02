@@ -40,9 +40,7 @@ class EdgeImpl {
         mindmapsGraph.getConceptLog().putConcept(getTarget());
         mindmapsGraph.getConceptLog().putConcept(getSource());
 
-        //edge.remove();
-
-        mindmapsGraph.getTinkerPopGraph().traversal().E(edge.id()).next().remove();
+        edge.remove();
 
         edge = null;
     }
