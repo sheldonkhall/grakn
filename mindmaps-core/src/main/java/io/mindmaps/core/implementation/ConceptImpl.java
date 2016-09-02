@@ -724,7 +724,9 @@ abstract class ConceptImpl<T extends Concept, V extends Type> implements Concept
                 );
 
         // deletion
-        vertex.edges(direction, type.getLabel()).forEachRemaining(Element::remove);
+        vertex.edges(direction, type.getLabel()).forEachRemaining(edge -> {
+            mindmapsTransaction.getTinkerPopGraph().traversal().E(edge.id()).next().remove();
+        });
     }
 
     /**

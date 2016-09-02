@@ -222,7 +222,7 @@ class RelationImpl extends InstanceImpl<Relation, RelationType> implements Relat
                 }
             }
             casting.deleteEdges(Direction.OUT, DataType.EdgeLabel.ROLE_PLAYER);
-            casting.delete();
+            //casting.delete();
         }
 
         super.innerDelete();
