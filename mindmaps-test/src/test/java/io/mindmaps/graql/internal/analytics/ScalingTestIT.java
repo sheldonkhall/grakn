@@ -7,16 +7,21 @@ import io.mindmaps.api.CommitLogController;
 import io.mindmaps.api.GraphFactoryController;
 import io.mindmaps.api.ImportController;
 import io.mindmaps.api.TransactionController;
+import io.mindmaps.constants.DataType;
+import io.mindmaps.core.Data;
 import io.mindmaps.core.MindmapsGraph;
 import io.mindmaps.core.implementation.exception.MindmapsValidationException;
 import io.mindmaps.core.model.EntityType;
 import io.mindmaps.core.model.RelationType;
+import io.mindmaps.core.model.ResourceType;
 import io.mindmaps.core.model.RoleType;
 import io.mindmaps.factory.MindmapsClient;
 import io.mindmaps.loader.DistributedLoader;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.commons.configuration.Configuration;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -85,9 +90,9 @@ public class ScalingTestIT {
         }
 
         // compute the sample of graph sizes
-        int MAX_SIZE = 2;
-        int NUM_DIVS = 2;
-        int REPEAT = 2;
+        int MAX_SIZE = 1000;
+        int NUM_DIVS = 3;
+        int REPEAT = 3;
 
         int STEP_SIZE = MAX_SIZE/NUM_DIVS;
         List<Integer> graphSizes = new ArrayList<>();
@@ -108,7 +113,13 @@ public class ScalingTestIT {
         refreshOntology();
         Set<String> superNodes = new HashSet<>();
         for (int i = 0; i < NUM_SUPER_NODES; i++) {
-            superNodes.add(transaction.addEntity(thing).getId());
+            superNodes.add(transaction.putEntity("super-" + i, thing).getId());
+        }
+        transaction.commit();
+
+        ResourceType resource = transaction.putResourceType("degree", Data.LONG);
+        for (long i = 0; i < MAX_SIZE;i++) {
+            transaction.putResource(i,resource);
         }
         transaction.commit();
 
@@ -152,24 +163,17 @@ public class ScalingTestIT {
                 computer.degreesAndPersist();
                 stopTime = System.currentTimeMillis();
                 degreeAndPersistTime+=stopTime-startTime;
-                transaction.refresh();
-                superNodes.forEach(
-                        id -> transaction.getEntity(id).resources().forEach(
-                                resource -> System.out.println(resource.getValue())));
-                superNodes.forEach(
-                        id -> transaction.getEntity(id).relations().forEach(
-                                relation -> System.out.println(relation.rolePlayers())));
             }
 
             countTime /= REPEAT*1000;
             degreeTime /= REPEAT*1000;
             degreeAndPersistTime /= REPEAT*1000;
-            System.out.println("time to count: "+countTime);
+            System.out.println("time to count: " + countTime);
             scaleToAverageTimeCount.put(graphSize, countTime);
             System.out.println("time to degrees: " + degreeTime);
             scaleToAverageTimeDegree.put(graphSize, degreeTime);
             System.out.println("time to degreesAndPersist: " + degreeAndPersistTime);
-            scaleToAverageTimeDegreeAndPersist.put(graphSize,degreeAndPersistTime);
+            scaleToAverageTimeDegreeAndPersist.put(graphSize, degreeAndPersistTime);
         }
 
         writer.println("start clean graph " + System.currentTimeMillis()/1000L + "s");

@@ -24,11 +24,14 @@ import io.mindmaps.MindmapsTransaction;
 import io.mindmaps.constants.DataType;
 import io.mindmaps.core.Data;
 import io.mindmaps.core.MindmapsGraph;
+import io.mindmaps.core.implementation.MindmapsTinkerGraph;
+import io.mindmaps.core.implementation.MindmapsTransactionImpl;
 import io.mindmaps.core.implementation.exception.MindmapsValidationException;
 import io.mindmaps.core.model.*;
 import io.mindmaps.factory.MindmapsClient;
 import io.mindmaps.graql.internal.GraqlType;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.*;
@@ -160,15 +163,25 @@ public class Analytics {
     private void degreesAndPersist(String resourceType) {
         insertOntology(resourceType, Data.LONG);
         ComputerResult result = computer.compute(new DegreeAndPersistVertexProgram(allTypes));
+
         result.graph().traversal().V().forEachRemaining(v -> {
 
             if (v.keys().contains(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)) {
 
-                transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
-                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE()
-                        .forEachRemaining(edge -> edge.remove());
-                transaction.getRelation(v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID)).delete();
+//                transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
+//                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE()
+//                        .forEachRemaining(edge -> edge.remove());
+//                List<Edge> assertions = transaction.getTinkerTraversal().V().has(ITEM_IDENTIFIER.name(),
+//                        v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID).toString()).bothE().toList();
+//                Set<String> ids = new HashSet<>();
+//                assertions.forEach(edge -> ids.add(edge.id().toString()));
 
+                Relation relation = transaction.getRelation(v.value(DegreeAndPersistVertexProgram.OLD_ASSERTION_ID));
+                relation.delete();
+//                transaction.refresh();
+//                ids.forEach(id -> {
+//                    transaction.getTinkerTraversal().E(Long.valueOf(id));
+//                });
             }
         });
 
@@ -177,6 +190,7 @@ public class Analytics {
         } catch (MindmapsValidationException e) {
             e.printStackTrace();
         }
+
     }
 
     public void degreesAndPersist() throws ExecutionException, InterruptedException {
@@ -232,13 +246,11 @@ public class Analytics {
 
         //TODO: remove the deletion of resource. This should be done by core.
 
-//        List<Relation> r =
 
         List<Relation> relations = instance.relations(resourceOwner).stream()
-                .filter(relation -> relation.rolePlayers().size() == 2)
+//                .filter(relation -> relation.rolePlayers().size() == 2)
                 .filter(relation -> relation.rolePlayers().containsKey(resourceValue) &&
                         relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
-//                .filter(relation -> relation.rolePlayers().get(resourceValue).type().getId().equals(resourceName))
                 .collect(Collectors.toList());
 
         if (relations.isEmpty()) {
