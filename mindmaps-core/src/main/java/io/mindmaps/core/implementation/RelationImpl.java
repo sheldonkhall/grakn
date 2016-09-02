@@ -143,7 +143,12 @@ class RelationImpl extends InstanceImpl<Relation, RelationType> implements Relat
             }
 
             if(!this.equals(otherRelation)){
-                throw new ConceptException(ErrorMessage.RELATION_EXISTS.getMessage(otherRelation));
+                String error = ErrorMessage.RELATION_EXISTS.getMessage(otherRelation) + "\n";
+                error += "Role players:" + "\n";
+                for (Instance instance1 : otherRelation.rolePlayers().values()) {
+                    error += instance1 + "\n";
+                }
+                throw new ConceptException(error);
             } else {
                 return this;
             }
