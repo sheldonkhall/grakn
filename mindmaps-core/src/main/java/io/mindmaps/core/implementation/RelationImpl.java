@@ -148,6 +148,13 @@ class RelationImpl extends InstanceImpl<Relation, RelationType> implements Relat
                 for (Instance instance1 : otherRelation.rolePlayers().values()) {
                     error += instance1 + "\n";
                 }
+
+                error += "Relation you trying to create:" + "\n";
+                for (Instance instance1 : rolePlayers().values()) {
+                    error += instance1 + "\n";
+                }
+                error += instance;
+
                 throw new ConceptException(error);
             } else {
                 return this;
@@ -231,5 +238,10 @@ class RelationImpl extends InstanceImpl<Relation, RelationType> implements Relat
         }
 
         super.innerDelete();
+    }
+
+    @Override
+    public String toString(){
+        return super.toString() + " - INDEX [" + getProperty(DataType.ConceptPropertyUnique.INDEX) + "]";
     }
 }
