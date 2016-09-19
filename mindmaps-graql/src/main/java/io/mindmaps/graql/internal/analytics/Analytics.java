@@ -55,11 +55,8 @@ import static io.mindmaps.util.Schema.ConceptProperty.ITEM_IDENTIFIER;
 public class Analytics {
 
     public final String keySpace;
-    public static final String TYPE = Schema.MetaType.TYPE.getId();
-
+    // TODO: allow user specified resources
     public static final String degree = "degree";
-    private static Set<String> analyticsElements =
-            Sets.newHashSet(degree, GraqlType.HAS_RESOURCE.getId(degree));
 
     /**
      * The concept type ids that define which instances appear in the subgraph.
@@ -71,6 +68,7 @@ public class Analytics {
      */
     public Analytics(String keySpace) {
         this.keySpace = keySpace;
+
         MindmapsGraph graph = MindmapsClient.getGraph(this.keySpace);
 
         // collect meta-types to exclude them as they do not have instances
@@ -86,7 +84,8 @@ public class Analytics {
         excludedTypes.addAll(graph.getMetaRoleType().instances());
         excludedTypes.addAll(graph.getMetaRuleType().instances());
 
-        // collect analytics resource type to exclude
+        // collect analytics resource types to exclude
+        HashSet<String> analyticsElements = Sets.newHashSet(Analytics.degree, GraqlType.HAS_RESOURCE.getId(Analytics.degree));
         analyticsElements.stream()
                 .filter(element -> graph.getType(element) != null)
                 .map(graph::getType)
@@ -99,6 +98,9 @@ public class Analytics {
                 .collect(Collectors.toList()).forEach(type -> allTypes.add(type.getId()));
 
         graph.rollback();
+
+        // add analytics ontology - hard coded for now
+        insertOntology(degree, ResourceType.DataType.LONG);
     }
 
     /**
@@ -115,6 +117,9 @@ public class Analytics {
         for (Type t : types) {
             t.subTypes().forEach(subtype -> allTypes.add(subtype.getId()));
         }
+
+        // add analytics ontology - hard coded for now
+        insertOntology(degree, ResourceType.DataType.LONG);
     }
 
     /**
@@ -155,7 +160,6 @@ public class Analytics {
      * @param resourceType the type of the resource that will contain the degree
      */
     private void degreesAndPersist(String resourceType) {
-        insertOntology(resourceType, ResourceType.DataType.LONG);
         MindmapsComputer computer = MindmapsClient.getGraphComputer(keySpace);
         computer.compute(new DegreeAndPersistVertexProgram(keySpace, allTypes));
     }
@@ -168,6 +172,13 @@ public class Analytics {
         degreesAndPersist(degree);
     }
 
+    /**
+     * Add the analytics elements to the ontology of the graph specified in <code>keySpace</code>. The ontology elements
+     * are related to the resource type <code>resourceTypeId</code> used to persist data computed by analytics.
+     *
+     * @param resourceTypeId    the ID of a resource type used to persist information
+     * @param resourceDataType  the datatype of the resource type
+     */
     private void insertOntology(String resourceTypeId, ResourceType.DataType resourceDataType) {
         MindmapsGraph graph = MindmapsClient.getGraph(keySpace);
         ResourceType resource = graph.putResourceType(resourceTypeId, resourceDataType);
@@ -188,20 +199,6 @@ public class Analytics {
             throw new RuntimeException(ErrorMessage.ONTOLOGY_MUTATION.getMessage(e.getMessage()),e);
         }
 
-        //TODO: need a proper way to store this information
-        addAnalyticsElements(resourceTypeId);
-    }
-
-    private static void addAnalyticsElements(String resourceTypeId) {
-        if (analyticsElements == null) {
-            analyticsElements = new HashSet<>();
-        }
-        analyticsElements.add(resourceTypeId);
-        analyticsElements.add(GraqlType.HAS_RESOURCE.getId(resourceTypeId));
-    }
-
-    public static boolean isAnalyticsElement(Vertex vertex) {
-        return Analytics.analyticsElements.contains(getVertexType(vertex));
     }
 
     public static String persistResource(String keySpace, Vertex vertex,
@@ -261,7 +258,4 @@ public class Analytics {
         }
     }
 
-    public static String getVertexType(Vertex vertex) {
-        return vertex.value(Schema.ConceptProperty.TYPE.name());
-    }
 }
