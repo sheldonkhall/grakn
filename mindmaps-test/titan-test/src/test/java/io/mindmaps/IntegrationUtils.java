@@ -43,14 +43,14 @@ public class IntegrationUtils {
         MindmapsEngineServer.stop();
         sleep(5000);
 
-        if (EMBEDDED_CASS_ON.compareAndSet(false, true)) {
-            hideLogs();
-            EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra-embedded.yaml");
-            hideLogs();
-            sleep(5000);
-        }
+//        if (EMBEDDED_CASS_ON.compareAndSet(false, true)) {
+//            hideLogs();
+//            EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra-embedded.yaml");
+//            hideLogs();
+//            sleep(5000);
+//        }
 
-        System.setProperty(ConfigProperties.CONFIG_FILE_SYSTEM_PROPERTY, ConfigProperties.EMBEDDED_CONFIG_FILE);
+        System.setProperty(ConfigProperties.CONFIG_FILE_SYSTEM_PROPERTY, ConfigProperties.TEST_CONFIG_FILE);
         MindmapsEngineServer.start();
         sleep(5000);
     }
