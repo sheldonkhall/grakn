@@ -91,6 +91,10 @@ final class ElementFactory {
      * @return A concept built to the correct type
      */
     public ConceptImpl buildUnknownConcept(Vertex v){
+        if(!v.property(Schema.ConceptProperty.BASE_TYPE.name()).isPresent()){
+            return null;
+        }
+        
         Schema.BaseType type = Schema.BaseType.valueOf(v.value(Schema.ConceptProperty.BASE_TYPE.name()));
         ConceptImpl concept = null;
         switch (type){
