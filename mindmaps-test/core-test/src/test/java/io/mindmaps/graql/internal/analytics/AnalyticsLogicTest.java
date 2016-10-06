@@ -21,6 +21,7 @@ package io.mindmaps.graql.internal.analytics;
 import io.mindmaps.MindmapsGraph;
 import io.mindmaps.MindmapsTinkerTestBase;
 import io.mindmaps.concept.EntityType;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,11 +43,11 @@ public class AnalyticsLogicTest extends MindmapsTinkerTestBase {
         keyspace = graph.getKeyspace();
     }
 
-//    @After
-//    public void cleanGraph() {
-//        graph.clear();
-//        graph.close();
-//    }
+    @After
+    public void cleanGraph() {
+        graph.clear();
+        graph.close();
+    }
 
     @Test
     public void testTinkerGraphComputerActuallyWorks() throws InterruptedException {
@@ -55,9 +56,7 @@ public class AnalyticsLogicTest extends MindmapsTinkerTestBase {
         EntityType thing = graph.putEntityType(thingId);
         for (int i=0; i<numberOfEntities; i++) graph.addEntity(thing);
 
-        Thread.sleep(5000);
         Analytics analytics = new Analytics(keyspace, new HashSet<>(), new HashSet<>());
-        Thread.sleep(5000);
         assertEquals(numberOfEntities, thing.instances().size());
         assertEquals(numberOfEntities, analytics.count());
     }
