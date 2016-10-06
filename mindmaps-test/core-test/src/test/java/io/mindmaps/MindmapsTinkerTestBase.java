@@ -23,7 +23,7 @@ import ch.qos.logback.classic.Logger;
 import io.mindmaps.engine.util.ConfigProperties;
 import org.junit.BeforeClass;
 
-public class MindmapsTinkerTestBase extends AbstractMindmapsEngineTest {
+public abstract class MindmapsTinkerTestBase extends AbstractMindmapsEngineTest {
 
     private static void hideLogs() {
         Logger logger = (Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
@@ -31,14 +31,14 @@ public class MindmapsTinkerTestBase extends AbstractMindmapsEngineTest {
     }
 
     @BeforeClass
-    public static void startEmbeddedCassandra() throws Exception {
+    public static void startEngine() throws Exception {
         startTestEngine(ConfigProperties.TEST_TINKER_COMPUTER);
         hideLogs();
     }
 
     @Override
     public void buildGraph() {
-        graph = batchGraphWithNewKeyspace();
+        graph = graphWithNewKeyspace();
     }
 
     @Override

@@ -38,7 +38,7 @@ public class AnalyticsLogicTest extends MindmapsTinkerTestBase {
 
     @Before
     public void setUp() throws InterruptedException {
-        graph = batchGraphWithNewKeyspace();
+        graph = graphWithNewKeyspace();
         keyspace = graph.getKeyspace();
     }
 
@@ -49,13 +49,16 @@ public class AnalyticsLogicTest extends MindmapsTinkerTestBase {
 //    }
 
     @Test
-    public void testTinkerGraphComputerActuallyWorks() {
+    public void testTinkerGraphComputerActuallyWorks() throws InterruptedException {
         String thingId = "thing";
         int numberOfEntities = 10;
         EntityType thing = graph.putEntityType(thingId);
         for (int i=0; i<numberOfEntities; i++) graph.addEntity(thing);
 
+        Thread.sleep(5000);
         Analytics analytics = new Analytics(keyspace, new HashSet<>(), new HashSet<>());
+        Thread.sleep(5000);
+        assertEquals(numberOfEntities, thing.instances().size());
         assertEquals(numberOfEntities, analytics.count());
     }
 
