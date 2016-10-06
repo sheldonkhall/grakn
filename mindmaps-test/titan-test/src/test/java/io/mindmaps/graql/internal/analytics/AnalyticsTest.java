@@ -68,11 +68,11 @@ public class AnalyticsTest extends MindmapsTitanTestBase {
         keyspace = graph.getKeyspace();
     }
 
-//    @After
-//    public void cleanGraph() {
-//        graph.clear();
-//        graph.close();
-//    }
+    @After
+    public void cleanGraph() {
+        graph.clear();
+        graph.close();
+    }
 
     @Test
     public void testAkoIsAccountedForInSubgraph() throws Exception {

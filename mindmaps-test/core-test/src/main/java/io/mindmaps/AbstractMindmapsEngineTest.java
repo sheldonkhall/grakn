@@ -25,10 +25,6 @@ public abstract class AbstractMindmapsEngineTest {
         return Mindmaps.factory(Mindmaps.DEFAULT_URI, UUID.randomUUID().toString().replaceAll("-", "")).getGraph();
     }
 
-    public static MindmapsGraph batchGraphWithNewKeyspace() {
-        return Mindmaps.factory(Mindmaps.DEFAULT_URI, UUID.randomUUID().toString().replaceAll("-", "")).getGraphBatchLoading();
-    }
-
     public static MindmapsGraph graphWithNewKeyspace(String keyspace){
         return Mindmaps.factory(Mindmaps.DEFAULT_URI, keyspace).getGraph();
     }
