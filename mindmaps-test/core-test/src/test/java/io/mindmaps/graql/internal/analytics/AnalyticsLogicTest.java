@@ -20,14 +20,17 @@ package io.mindmaps.graql.internal.analytics;
 
 import io.mindmaps.MindmapsGraph;
 import io.mindmaps.MindmapsTinkerTestBase;
+import io.mindmaps.concept.Concept;
 import io.mindmaps.concept.EntityType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -53,12 +56,19 @@ public class AnalyticsLogicTest extends MindmapsTinkerTestBase {
     public void testTinkerGraphComputerActuallyWorks() throws InterruptedException {
         String thingId = "thing";
         int numberOfEntities = 10;
+        HashMap<Concept,Long> degrees = new HashMap<>();
+
         EntityType thing = graph.putEntityType(thingId);
-        for (int i=0; i<numberOfEntities; i++) graph.addEntity(thing);
+        for (int i=0; i<numberOfEntities; i++) degrees.put(graph.addEntity(thing), 0L);
 
         Analytics analytics = new Analytics(keyspace, new HashSet<>(), new HashSet<>());
+
+        // count
         assertEquals(numberOfEntities, thing.instances().size());
         assertEquals(numberOfEntities, analytics.count());
+
+        // degrees
+        assertTrue(degrees.equals(analytics.degrees()));
     }
 
 }
