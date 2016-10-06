@@ -34,9 +34,10 @@ import java.util.Properties;
 public class ConfigProperties {
 
     //Test Configs
-    public static final String TEST_CONFIG_FILE = "../../conf/test/mindmaps-engine-test.properties";
+    public static final String TEST_CONFIG_FILE = "../conf/test/mindmaps-engine-test.properties";
     public static final String EMBEDDED_CONFIG_FILE = "../../conf/test/mindmaps-engine-embedded.properties";
     public static final String EXPERIMENTAL_CONFIG_FILE = "../../conf/experimental/mindmaps-engine-test.properties";
+    public static final String TEST_TINKER_COMPUTER = "../../conf/test/mindmaps-engine-test.properties";
 
     public static final String DEFAULT_CONFIG_FILE = "../conf/main/mindmaps-engine.properties";
     public static final String DEFAULT_LOG_CONFIG_FILE = "../conf/main/logback.xml";

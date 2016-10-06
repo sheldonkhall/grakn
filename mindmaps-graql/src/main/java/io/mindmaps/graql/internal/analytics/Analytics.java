@@ -100,7 +100,7 @@ public class Analytics {
                 .map(Concept::asType)
                 .forEach(type -> subtypes.add(type.getId()));
 
-        graph.rollback();
+//        graph.rollback();
 
         // add analytics ontology - hard coded for now
         mutateResourceOntology(degree, ResourceType.DataType.LONG);
@@ -145,7 +145,7 @@ public class Analytics {
         MindmapsGraph graph = Mindmaps.factory(Mindmaps.DEFAULT_URI, this.keySpace).getGraph();
 
         // make sure we don't accidentally commit anything
-        graph.rollback();
+//        graph.rollback();
 
         // fetch all the types
         Set<Type> subtypes = subTypeIds.stream().map((id) -> {

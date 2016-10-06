@@ -20,15 +20,14 @@ public abstract class MindmapsTitanTestBase extends AbstractMindmapsEngineTest {
 
     @BeforeClass
     public static void startEmbeddedCassandra() throws Exception {
-//        startTestEngine(ConfigProperties.EMBEDDED_CONFIG_FILE);
-        startTestEngine(ConfigProperties.TEST_CONFIG_FILE);
+        startTestEngine(ConfigProperties.EMBEDDED_CONFIG_FILE);
 
-//        if (EMBEDDED_CASS_ON.compareAndSet(false, true)) {
-//            hideLogs();
-//            EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra-embedded.yaml");
-//            hideLogs();
-//            sleep(5000);
-//        }
+        if (EMBEDDED_CASS_ON.compareAndSet(false, true)) {
+            hideLogs();
+            EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra-embedded.yaml");
+            hideLogs();
+            sleep(5000);
+        }
     }
 
     @Override
