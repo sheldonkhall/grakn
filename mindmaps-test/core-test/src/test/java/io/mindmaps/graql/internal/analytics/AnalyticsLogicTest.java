@@ -36,11 +36,9 @@ public class AnalyticsLogicTest extends MindmapsTinkerTestBase {
     String keyspace;
     MindmapsGraph graph;
 
-    long startTime;
-
     @Before
     public void setUp() throws InterruptedException {
-        graph = graphWithNewKeyspace();
+        graph = batchGraphWithNewKeyspace();
         keyspace = graph.getKeyspace();
     }
 
