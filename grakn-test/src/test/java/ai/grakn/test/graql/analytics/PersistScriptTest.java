@@ -5,10 +5,10 @@ import ai.grakn.GraknGraph;
 import ai.grakn.concept.Concept;
 import ai.grakn.concept.ConceptId;
 import ai.grakn.concept.ResourceType;
+import ai.grakn.concept.TypeName;
 import ai.grakn.exception.GraknValidationException;
 import ai.grakn.graql.Graql;
 import ai.grakn.graql.InsertQuery;
-import ai.grakn.graql.MatchQuery;
 import ai.grakn.graql.Var;
 import com.google.common.collect.Sets;
 import org.junit.Test;
@@ -33,49 +33,86 @@ public class PersistScriptTest {
     public void testPersistCluster() {
         Map<String, Set<String>> result = Graql.compute().withGraph(graknGraph).cluster().in("product", "also-viewed").members().execute();
 
-        String clusterResourceType = "cluster-also-viewed";
-        insertResourceOntology(Sets.newHashSet("product", "also-viewed"), clusterResourceType);
+        String clusterEntityType = "cluster-also-viewed";
+        insertEntityOntology(clusterEntityType, Sets.newHashSet("product", "also-viewed"));
+        int minClusterSize = 3;
 
+        // insert clusters without members
+        result.keySet().forEach(clusterID -> {
+            if (result.get(clusterID).size()>=minClusterSize) {
+                insert(var().isa(clusterEntityType)
+                        .has(getResourceTypeFromEntityType(clusterEntityType), clusterID))
+                        .withGraph(graknGraph).execute();
+            }
+        });
+        try {
+            graknGraph.commit();
+        } catch (GraknValidationException e) {
+            e.printStackTrace();
+        }
+
+        // relate members of clusters
         result.forEach((clusterId, memberIds) -> {
             Set<InsertQuery> clusterInsert = new HashSet<>();
-            if (memberIds.size() > 2) {
+            if (memberIds.size() >= minClusterSize) {
                 memberIds.forEach(memberId -> {
                     String thisConcept = "thisConcept";
-                    clusterInsert.add(match(var(thisConcept).id(ConceptId.of(memberId))).insert(var(thisConcept).has(clusterResourceType, clusterId)));
+                    String thisCluster = "thisCluster";
+                    clusterInsert.add(
+                            match(
+                                    var(thisConcept).id(ConceptId.of(memberId)),
+                                    var(thisCluster).isa(clusterEntityType).has(getResourceTypeFromEntityType(clusterEntityType), clusterId))
+                                    .insert(
+                                            var().isa(getRelationTypeFromEntityType(clusterEntityType))
+                                                    .rel(getOwnerRoleTypeFromEntityType(clusterEntityType),thisConcept)
+                                                    .rel(getValueRoleTypeFromEntityType(clusterEntityType),thisCluster)));
                 });
                 clusterInsert.forEach(insertQuery -> {
                     insertQuery.withGraph(graknGraph).execute();
-                    try {
-                        graknGraph.commit();
-                    } catch (GraknValidationException e) {
-                        e.printStackTrace();
-                    }
                 });
+                try {
+                    graknGraph.commit();
+                } catch (GraknValidationException e) {
+                    e.printStackTrace();
+                }
             }
         });
         System.out.println(result);
     }
 
-    private void insertResourceOntology(Set<String> entitiesWithResource, String clusterResourceType) {
-        graknGraph.rollback();
+    @Test
+    public void testPersistDegrees() {
+        Map<Long, Set<String>> result = Graql.compute().withGraph(graknGraph).degree().of("cluster-also-viewed").in(Sets.newHashSet(TypeName.of("cluster-also-viewed"), TypeName.of("has-cluster-also-viewed"))).execute();
 
-        // find root cluster resource and add if necessary
-        String rootClusterResource = "cluster";
-        Var rootClusterResourceVar = var().sub("resource").name(rootClusterResource);
-        List<Map<String, Concept>> result = match(rootClusterResourceVar).withGraph(graknGraph).execute();
-        if (result.isEmpty()) {
-            insert(rootClusterResourceVar.datatype(ResourceType.DataType.STRING)).withGraph(graknGraph).execute();
-            try {
-                graknGraph.commit();
-            } catch (GraknValidationException e) {
-                e.printStackTrace();
-            }
-        }
+        String degreeResourceType = "degree-also-viewed-new";
+        insertResourceOntology(Sets.newHashSet("cluster-also-viewed"), degreeResourceType, ResourceType.DataType.LONG);
+
+        result.forEach((degree, memberIds) -> {
+            Set<InsertQuery> degreeInsert = new HashSet<>();
+            memberIds.forEach(memberId -> {
+                String thisConcept = "thisConcept";
+                degreeInsert.add(match(var(thisConcept).id(ConceptId.of(memberId))).insert(var(thisConcept).has(degreeResourceType, degree)));
+            });
+            degreeInsert.forEach(insertQuery -> {
+                insertQuery.withGraph(graknGraph).execute();
+                try {
+                    graknGraph.commit();
+                } catch (GraknValidationException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        System.out.println(result);
+
+    }
+
+    private void insertResourceOntology(Set<String> entitiesWithResource, String clusterResourceType, ResourceType.DataType dataType) {
+        graknGraph.rollback();
 
         // add new resource type as sub cluster
         Set<InsertQuery> ontologyInsert = new HashSet<>();
         String thisEntityType = "thisEntityType";
-        insert(var().sub("cluster").name(clusterResourceType).datatype(ResourceType.DataType.STRING))
+        insert(var().sub("resource").name(clusterResourceType).datatype(dataType))
                 .withGraph(graknGraph).execute();
         try {
             graknGraph.commit();
@@ -97,4 +134,49 @@ public class PersistScriptTest {
         });
     }
 
+    /**
+     * Create the ontology to relate an entity with a set of other entities and identify the entity with an id. The
+     * relation type and roles are automatically generated using the name of the entity type. A resource type is also
+     * created using the entity name that can hold a string ID.
+     *
+     * @param entityType the entity that will have other entities related to it.
+     * @param entitiesConnectedToEntity the other entities to relate to the given entity.
+     */
+    private void insertEntityOntology(String entityType, Set<String> entitiesConnectedToEntity) {
+        graknGraph.rollback();
+        Set<Var> mutation = new HashSet<>();
+
+        String ownerRole = getOwnerRoleTypeFromEntityType(entityType);
+        String valueRole = getValueRoleTypeFromEntityType(entityType);
+
+        // put relation and roles
+        mutation.add(var().sub("role").name(ownerRole));
+        mutation.add(var().sub("role").name(valueRole));
+        mutation.add(var().sub("relation").name(getRelationTypeFromEntityType(entityType)).hasRole(ownerRole).hasRole(valueRole));
+
+        // put entity and resource
+        mutation.add(var().sub("resource").name(getResourceTypeFromEntityType(entityType)).datatype(ResourceType.DataType.STRING));
+        mutation.add(var().sub("entity").name(entityType).playsRole(valueRole).hasResource(getResourceTypeFromEntityType(entityType)));
+
+        // assert connected entities play role
+        entitiesConnectedToEntity.forEach(connectedEntity -> {
+            mutation.add(var().name(connectedEntity).playsRole(ownerRole));
+        });
+
+        // persist
+        insert(mutation).withGraph(graknGraph).execute();
+        try {
+            graknGraph.commit();
+        } catch (GraknValidationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getResourceTypeFromEntityType(String entityType) {return entityType+"-id";}
+
+    private String getRelationTypeFromEntityType(String entityType) {return "has-"+entityType;}
+
+    private String getOwnerRoleTypeFromEntityType(String entityType) {return entityType+"-owner";}
+
+    private String getValueRoleTypeFromEntityType(String entityType) {return entityType+"-value";}
 }
