@@ -120,7 +120,7 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistAll() {
-        persistClusterAndDegrees("cluster-also-viewed",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
+        persistClusterAndDegrees("cluster-all",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
     }
 
     @Test
@@ -128,10 +128,11 @@ public class PersistScriptTest {
         persistClusterAndDegrees("cluster-category",Sets.newHashSet("category","hierarchy"));
     }
 
-    @Test
-    public void testPersistUserProduct() {
-        persistClusterAndDegrees("cluster-user-product",Sets.newHashSet("user","product","product-review"));
-    }
+    // not very interesting
+//    @Test
+//    public void testPersistUserProduct() {
+//        persistClusterAndDegrees("cluster-user-product",Sets.newHashSet("user","product","product-review"));
+//    }
 
     private void persistClusterAndDegrees(String clusterName, Set<String> subGraph) {
         persistCluster(clusterName, subGraph);
