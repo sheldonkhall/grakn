@@ -29,83 +29,6 @@ public class PersistScriptTest {
 
     final GraknGraph graknGraph = Grakn.factory(Grakn.DEFAULT_URI, "grakn").getGraph();
 
-    @Test
-    public void testPersistCluster() {
-        Map<String, Set<String>> result = Graql.compute().withGraph(graknGraph).cluster().in("product", "also-viewed").members().execute();
-
-        String clusterEntityType = "cluster-also-viewed";
-        insertEntityOntology(clusterEntityType, Sets.newHashSet("product", "also-viewed"));
-        int minClusterSize = 3;
-
-        // insert clusters without members
-        result.keySet().forEach(clusterID -> {
-            if (result.get(clusterID).size()>=minClusterSize) {
-                insert(var().isa(clusterEntityType)
-                        .has(getResourceTypeFromEntityType(clusterEntityType), clusterID))
-                        .withGraph(graknGraph).execute();
-            }
-        });
-        try {
-            graknGraph.commit();
-        } catch (GraknValidationException e) {
-            e.printStackTrace();
-        }
-
-        // relate members of clusters
-        result.forEach((clusterId, memberIds) -> {
-            Set<InsertQuery> clusterInsert = new HashSet<>();
-            if (memberIds.size() >= minClusterSize) {
-                memberIds.forEach(memberId -> {
-                    String thisConcept = "thisConcept";
-                    String thisCluster = "thisCluster";
-                    clusterInsert.add(
-                            match(
-                                    var(thisConcept).id(ConceptId.of(memberId)),
-                                    var(thisCluster).isa(clusterEntityType).has(getResourceTypeFromEntityType(clusterEntityType), clusterId))
-                                    .insert(
-                                            var().isa(getRelationTypeFromEntityType(clusterEntityType))
-                                                    .rel(getOwnerRoleTypeFromEntityType(clusterEntityType),thisConcept)
-                                                    .rel(getValueRoleTypeFromEntityType(clusterEntityType),thisCluster)));
-                });
-                clusterInsert.forEach(insertQuery -> {
-                    insertQuery.withGraph(graknGraph).execute();
-                });
-                try {
-                    graknGraph.commit();
-                } catch (GraknValidationException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        System.out.println(result);
-    }
-
-    @Test
-    public void testPersistDegrees() {
-        Map<Long, Set<String>> result = Graql.compute().withGraph(graknGraph).degree().of("cluster-also-viewed").in(Sets.newHashSet(TypeName.of("cluster-also-viewed"), TypeName.of("has-cluster-also-viewed"))).execute();
-
-        String degreeResourceType = "degree-also-viewed-new";
-        insertResourceOntology(Sets.newHashSet("cluster-also-viewed"), degreeResourceType, ResourceType.DataType.LONG);
-
-        result.forEach((degree, memberIds) -> {
-            Set<InsertQuery> degreeInsert = new HashSet<>();
-            memberIds.forEach(memberId -> {
-                String thisConcept = "thisConcept";
-                degreeInsert.add(match(var(thisConcept).id(ConceptId.of(memberId))).insert(var(thisConcept).has(degreeResourceType, degree)));
-            });
-            degreeInsert.forEach(insertQuery -> {
-                insertQuery.withGraph(graknGraph).execute();
-                try {
-                    graknGraph.commit();
-                } catch (GraknValidationException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-        System.out.println(result);
-
-    }
-
     private void insertResourceOntology(Set<String> entitiesWithResource, String clusterResourceType, ResourceType.DataType dataType) {
         graknGraph.rollback();
 
@@ -179,4 +102,113 @@ public class PersistScriptTest {
     private String getOwnerRoleTypeFromEntityType(String entityType) {return entityType+"-owner";}
 
     private String getValueRoleTypeFromEntityType(String entityType) {return entityType+"-value";}
+
+    @Test
+    public void testPersistBoughtTogether() {
+        persistClusterAndDegrees("cluster-bought-together",Sets.newHashSet("product","bought-together"));
+    }
+
+    @Test
+    public void testPersistAlsoBought() {
+        persistClusterAndDegrees("cluster-also-bought",Sets.newHashSet("product","also-bought"));
+    }
+
+    @Test
+    public void testPersistAlsoViewed() {
+        persistClusterAndDegrees("cluster-also-viewed",Sets.newHashSet("product","also-viewed"));
+    }
+
+    @Test
+    public void testPersistAll() {
+        persistClusterAndDegrees("cluster-also-viewed",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
+    }
+
+    @Test
+    public void testPersistCategory() {
+        persistClusterAndDegrees("cluster-category",Sets.newHashSet("category","hierarchy"));
+    }
+
+    @Test
+    public void testPersistUserProduct() {
+        persistClusterAndDegrees("cluster-user-product",Sets.newHashSet("user","product","product-review"));
+    }
+
+    private void persistClusterAndDegrees(String clusterName, Set<String> subGraph) {
+        persistCluster(clusterName, subGraph);
+        persistDegrees(clusterName);
+    }
+
+    private void persistCluster(String clusterName, Set<String> subGraph) {
+        Map<String, Set<String>> result = Graql.compute().withGraph(graknGraph).cluster().in(subGraph.toArray(new String[subGraph.size()])).members().execute();
+
+        insertEntityOntology(clusterName, subGraph);
+        int minClusterSize = 3;
+
+        // insert clusters without members
+        result.keySet().forEach(clusterID -> {
+            if (result.get(clusterID).size()>=minClusterSize) {
+                insert(var().isa(clusterName)
+                        .has(getResourceTypeFromEntityType(clusterName), clusterID))
+                        .withGraph(graknGraph).execute();
+            }
+        });
+        try {
+            graknGraph.commit();
+        } catch (GraknValidationException e) {
+            e.printStackTrace();
+        }
+
+        // relate members of clusters
+        result.forEach((clusterId, memberIds) -> {
+            Set<InsertQuery> clusterInsert = new HashSet<>();
+            if (memberIds.size() >= minClusterSize) {
+                memberIds.forEach(memberId -> {
+                    String thisConcept = "thisConcept";
+                    String thisCluster = "thisCluster";
+                    clusterInsert.add(
+                            match(
+                                    var(thisConcept).id(ConceptId.of(memberId)),
+                                    var(thisCluster).isa(clusterName).has(getResourceTypeFromEntityType(clusterName), clusterId))
+                                    .insert(
+                                            var().isa(getRelationTypeFromEntityType(clusterName))
+                                                    .rel(getOwnerRoleTypeFromEntityType(clusterName),thisConcept)
+                                                    .rel(getValueRoleTypeFromEntityType(clusterName),thisCluster)));
+                });
+                clusterInsert.forEach(insertQuery -> {
+                    insertQuery.withGraph(graknGraph).execute();
+                });
+                try {
+                    graknGraph.commit();
+                } catch (GraknValidationException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        System.out.println(result);
+
+    }
+
+    private void persistDegrees(String clusterName) {
+        Map<Long, Set<String>> result = Graql.compute().withGraph(graknGraph).degree().of(clusterName).in(Sets.newHashSet(TypeName.of(clusterName), TypeName.of(getRelationTypeFromEntityType(clusterName)))).execute();
+
+        String degreeResourceType = "degree-"+clusterName;
+        insertResourceOntology(Sets.newHashSet(clusterName), degreeResourceType, ResourceType.DataType.LONG);
+
+        result.forEach((degree, memberIds) -> {
+            Set<InsertQuery> degreeInsert = new HashSet<>();
+            memberIds.forEach(memberId -> {
+                String thisConcept = "thisConcept";
+                degreeInsert.add(match(var(thisConcept).id(ConceptId.of(memberId))).insert(var(thisConcept).has(degreeResourceType, degree)));
+            });
+            degreeInsert.forEach(insertQuery -> {
+                insertQuery.withGraph(graknGraph).execute();
+                try {
+                    graknGraph.commit();
+                } catch (GraknValidationException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        System.out.println(result);
+    }
 }
