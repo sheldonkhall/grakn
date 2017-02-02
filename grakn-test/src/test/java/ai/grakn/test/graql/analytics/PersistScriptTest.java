@@ -7,7 +7,6 @@ import ai.grakn.concept.ResourceType;
 import ai.grakn.exception.GraknValidationException;
 import ai.grakn.graql.Graql;
 import ai.grakn.graql.InsertQuery;
-import ai.grakn.graql.Var;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 
@@ -31,7 +30,7 @@ public class PersistScriptTest {
         Map<String, Set<String>> result = Graql.compute().withGraph(graknGraph).cluster().in("product", "bought-together").members().execute();
 
         String clusterResourceType = "cluster";
-        insertClusterOntology(Sets.newHashSet("product","bought-together"), clusterResourceType);
+        insertResourceOntology(Sets.newHashSet("product", "bought-together"), clusterResourceType);
 
         result.forEach((clusterId, memberIds) -> {
             Set<InsertQuery> clusterInsert = new HashSet<>();
@@ -51,7 +50,7 @@ public class PersistScriptTest {
         System.out.println(result);
     }
 
-    private void insertClusterOntology(Set<String> entitiesWithResource, String clusterResourceType) {
+    private void insertResourceOntology(Set<String> entitiesWithResource, String clusterResourceType) {
         graknGraph.rollback();
         Set<InsertQuery> ontologyInsert = new HashSet<>();
         String thisEntityType = "thisEntityType";
