@@ -141,7 +141,8 @@ public class PersistScriptTest {
 
     private void persistClusterAndDegrees(String clusterName, Set<String> subGraph) {
         persistCluster(clusterName, subGraph);
-        persistDegrees(clusterName);
+//        persistDegrees(clusterName);
+        persistDegreesEntity(clusterName, Sets.newHashSet(clusterName, getRelationTypeFromEntityType(clusterName)));
     }
 
     private void persistCluster(String clusterName, Set<String> subGraph) {
