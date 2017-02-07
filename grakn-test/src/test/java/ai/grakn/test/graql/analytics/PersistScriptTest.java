@@ -27,7 +27,7 @@ import static ai.grakn.graql.Graql.var;
  */
 public class PersistScriptTest {
 
-    final GraknGraph graknGraph = Grakn.factory(Grakn.DEFAULT_URI, "grakn").getGraph();
+    final GraknGraph graknGraph = Grakn.factory(Grakn.DEFAULT_URI, "amazon").getGraph();
 
     private void insertResourceOntology(Set<String> entitiesWithResource, String clusterResourceType, ResourceType.DataType dataType) {
         graknGraph.rollback();
@@ -127,7 +127,7 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistCategory() {
-        persistClusterAndDegrees("whatever",Sets.newHashSet("category","hierarchy"));
+        persistClusterAndDegrees("category-groups",Sets.newHashSet("category","hierarchy"));
     }
 
     @Test
