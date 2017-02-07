@@ -69,6 +69,8 @@ public class PersistScriptTest {
         graknGraph.rollback();
         Set<Var> mutation = new HashSet<>();
 
+        Var entityVar = var(entityType).name(entityType);
+
         String ownerRole = getOwnerRoleTypeFromEntityType(entityType);
         String valueRole = getValueRoleTypeFromEntityType(entityType);
 
@@ -79,7 +81,7 @@ public class PersistScriptTest {
 
         // put entity and resource
         mutation.add(var().sub("resource").name(getResourceTypeFromEntityType(entityType)).datatype(ResourceType.DataType.STRING));
-        mutation.add(var().sub("entity").name(entityType).playsRole(valueRole).hasResource(getResourceTypeFromEntityType(entityType)));
+        mutation.add(var(entityType).playsRole(valueRole).hasResource(getResourceTypeFromEntityType(entityType)));
 
         // assert connected entities play role
         entitiesConnectedToEntity.forEach(connectedEntity -> {
@@ -87,7 +89,7 @@ public class PersistScriptTest {
         });
 
         // persist
-        insert(mutation).withGraph(graknGraph).execute();
+        match(entityVar).insert(mutation).withGraph(graknGraph).execute();
         try {
             graknGraph.commit();
         } catch (GraknValidationException e) {
@@ -120,12 +122,12 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistAll() {
-        persistClusterAndDegrees("cluster-all",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
+        persistClusterAndDegrees("all",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
     }
 
     @Test
     public void testPersistCategory() {
-        persistClusterAndDegrees("cluster-category",Sets.newHashSet("category","hierarchy"));
+        persistClusterAndDegrees("whatever",Sets.newHashSet("category","hierarchy"));
     }
 
     @Test
@@ -147,6 +149,14 @@ public class PersistScriptTest {
 
     private void persistCluster(String clusterName, Set<String> subGraph) {
         Map<String, Set<String>> result = Graql.compute().withGraph(graknGraph).cluster().in(subGraph.toArray(new String[subGraph.size()])).members().execute();
+
+        // put the cluster supertype
+        Var clusterEntityType = var().sub("entity").name("cluster");
+        putVar(clusterEntityType);
+
+        // put the cluster
+        Var clusterSubEntityType = var().sub("cluster").name(clusterName);
+        putVar(clusterSubEntityType);
 
         insertEntityOntology(clusterName, subGraph);
         int minClusterSize = 3;
@@ -174,7 +184,7 @@ public class PersistScriptTest {
                     String thisCluster = "thisCluster";
                     clusterInsert.add(
                             match(
-                                    var(thisConcept).id(ConceptId.of(memberId)),
+                                    var(thisConcept).id(ConceptId.of(memberId)).isa("entity"),
                                     var(thisCluster).isa(clusterName).has(getResourceTypeFromEntityType(clusterName), clusterId))
                                     .insert(
                                             var().isa(getRelationTypeFromEntityType(clusterName))
@@ -246,5 +256,17 @@ public class PersistScriptTest {
             });
         });
         System.out.println(result);
+    }
+
+    private void putVar(Var var) {
+        List<Map<String, Concept>> clusterSubEntityResult = match(var).withGraph(graknGraph).execute();
+        if (clusterSubEntityResult.isEmpty()) {
+            insert(var).withGraph(graknGraph).execute();
+            try {
+                graknGraph.commit();
+            } catch (GraknValidationException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
