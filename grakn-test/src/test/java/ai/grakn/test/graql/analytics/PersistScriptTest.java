@@ -107,7 +107,7 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistBoughtTogether() {
-        persistClusterAndDegrees("cluster-bought-together",Sets.newHashSet("product","bought-together"));
+        persistClusterAndDegrees("together",Sets.newHashSet("product","bought-together"));
     }
 
 //    @Test
@@ -132,7 +132,7 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistRecommendation() {
-        persistDegreesEntity("co-categories",Sets.newHashSet("co-categories","implied-recommendation"));
+        persistDegreesEntity("evidence",Sets.newHashSet("co-categories","implied-recommendation"));
     }
 
     // not very interesting
