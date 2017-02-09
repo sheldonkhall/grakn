@@ -132,7 +132,7 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistRecommendation() {
-        persistDegreesEntity("evidence",Sets.newHashSet("co-categories","implied-recommendation"));
+        persistDegreesEntity("co-categories",Sets.newHashSet("co-categories","implied-recommendation"));
     }
 
     // not very interesting
