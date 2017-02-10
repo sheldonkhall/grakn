@@ -67,6 +67,12 @@ public class PersistScriptTest {
      */
     private void insertEntityOntology(String entityType, Set<String> entitiesConnectedToEntity) {
         graknGraph.rollback();
+
+        // put the generic ID resource in the graph
+        String idID = "ID";
+        putVar(var().sub("resource").name(idID));
+
+        // start making the ontology changes for the relation
         Set<Var> mutation = new HashSet<>();
 
         Var entityVar = var(entityType).name(entityType);
@@ -80,7 +86,7 @@ public class PersistScriptTest {
         mutation.add(var().sub("relation").name(getRelationTypeFromEntityType(entityType)).hasRole(ownerRole).hasRole(valueRole));
 
         // put entity and resource
-        mutation.add(var().sub("resource").name(getResourceTypeFromEntityType(entityType)).datatype(ResourceType.DataType.STRING));
+        mutation.add(var().sub(idID).name(getResourceTypeFromEntityType(entityType)).datatype(ResourceType.DataType.STRING));
         mutation.add(var(entityType).playsRole(valueRole).hasResource(getResourceTypeFromEntityType(entityType)));
 
         // assert connected entities play role
@@ -132,7 +138,12 @@ public class PersistScriptTest {
 
     @Test
     public void testPersistRecommendation() {
-        persistDegreesEntity("co-categories",Sets.newHashSet("co-categories","implied-recommendation"));
+        persistDegreesEntity("co-category",Sets.newHashSet("co-category","implied"));
+    }
+
+    @Test
+    public void testPersistPurchase() {
+        persistDegreesEntity("product",Sets.newHashSet("product","purchase"));
     }
 
     // not very interesting
@@ -205,39 +216,10 @@ public class PersistScriptTest {
 
     }
 
-    /**
-     * Persist the degrees for a given cluster.
-     *
-     * @param clusterName the entity type of the cluster.
-     */
-    private void persistDegrees(String clusterName) {
-        Map<Long, Set<String>> result = Graql.compute().withGraph(graknGraph).degree().of(clusterName).in(Sets.newHashSet(TypeName.of(clusterName), TypeName.of(getRelationTypeFromEntityType(clusterName)))).execute();
-
-        String degreeResourceType = "degree-"+clusterName;
-        insertResourceOntology(Sets.newHashSet(clusterName), degreeResourceType, ResourceType.DataType.LONG);
-
-        result.forEach((degree, memberIds) -> {
-            Set<InsertQuery> degreeInsert = new HashSet<>();
-            memberIds.forEach(memberId -> {
-                String thisConcept = "thisConcept";
-                degreeInsert.add(match(var(thisConcept).id(ConceptId.of(memberId))).insert(var(thisConcept).has(degreeResourceType, degree)));
-            });
-            degreeInsert.forEach(insertQuery -> {
-                insertQuery.withGraph(graknGraph).execute();
-                try {
-                    graknGraph.commit();
-                } catch (GraknValidationException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-        System.out.println(result);
-    }
-
     private void persistDegreesEntity(String entityName, Set<String> subGraph) {
         Map<Long, Set<String>> result = Graql.compute().withGraph(graknGraph).degree().of(entityName).in(subGraph.toArray(new String[subGraph.size()])).execute();
 
-        String degreeResourceType = "degree-"+entityName;
+        String degreeResourceType = "degree";
         insertResourceOntology(Sets.newHashSet(entityName), degreeResourceType, ResourceType.DataType.LONG);
 
         result.forEach((degree, memberIds) -> {
