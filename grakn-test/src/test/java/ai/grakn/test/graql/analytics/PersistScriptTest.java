@@ -27,7 +27,7 @@ import static ai.grakn.graql.Graql.var;
  */
 public class PersistScriptTest {
 
-    final GraknGraph graknGraph = Grakn.factory(Grakn.DEFAULT_URI, "amazon").getGraph();
+    final GraknGraph graknGraph = Grakn.factory(Grakn.DEFAULT_URI, "biomed").getGraph();
 
     private void insertResourceOntology(Set<String> entitiesWithResource, String clusterResourceType, ResourceType.DataType dataType) {
         graknGraph.rollback();
@@ -116,16 +116,6 @@ public class PersistScriptTest {
         persistClusterAndDegrees("together",Sets.newHashSet("product","bought-together"));
     }
 
-//    @Test
-//    public void testPersistAlsoBought() {
-//        persistClusterAndDegrees("cluster-also-bought",Sets.newHashSet("product","also-bought"));
-//    }
-//
-//    @Test
-//    public void testPersistAlsoViewed() {
-//        persistClusterAndDegrees("cluster-also-viewed",Sets.newHashSet("product","also-viewed"));
-//    }
-
     @Test
     public void testPersistAll() {
         persistClusterAndDegrees("all",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
@@ -146,11 +136,11 @@ public class PersistScriptTest {
         persistDegreesEntity("product",Sets.newHashSet("product","purchase"));
     }
 
-    // not very interesting
-//    @Test
-//    public void testPersistUserProduct() {
-//        persistClusterAndDegrees("cluster-user-product",Sets.newHashSet("user","product","product-review"));
-//    }
+    @Test
+    public void testPersistBiomed() {
+        persistDegreesEntity("interaction",Sets.newHashSet("interaction","reference"));
+        persistDegreesEntity("gene-target",Sets.newHashSet("gene-target","reference"));
+    }
 
     private void persistClusterAndDegrees(String clusterName, Set<String> subGraph) {
         persistCluster(clusterName, subGraph);
