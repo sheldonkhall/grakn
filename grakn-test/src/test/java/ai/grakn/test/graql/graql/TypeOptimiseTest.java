@@ -54,13 +54,13 @@ public class TypeOptimiseTest {
     @Test
     public void testABunchOfQueriesToEnsureNotWorse() {
 
-        MatchQuery initialQuery = match(var("y").isa("person"), var().rel("actor","y").rel("x"));
+        MatchQuery initialQuery = match(var("y").isa("person"), var("r").rel("actor","y").rel(var("a"),"x"));
         testExpandedQueryIsEquivalent(initialQuery);
 
-        initialQuery = match(var("x").isa("movie"), var().rel("actor","y").rel("x"));
+        initialQuery = match(var("x").isa("movie"), var("r").rel("actor","y").rel(var("a"),"x"));
         testExpandedQueryIsEquivalent(initialQuery);
 
-        initialQuery = match(var("x").isa("movie").has("title","Godfather"), var().rel("actor","y").rel("x"));
+        initialQuery = match(var("x").isa("movie").has("title","Godfather"), var("r").rel("actor","y").rel(var("a"),"x"));
         testExpandedQueryIsEquivalent(initialQuery);
 
         initialQuery = match(var("x").isa(var("y")), var().rel("production-with-cast","x"));
@@ -163,7 +163,8 @@ public class TypeOptimiseTest {
                 .filter((x) -> !knownTypes.contains(x))
                 .map((x) -> {
                     if (unknownRoles.contains(x)) {
-                        return var(x).name(deduplicatedResults.get(x).iterator().next().toString());
+//                        return var(x).name(deduplicatedResults.get(x).iterator().next().toString());
+                        return var().name(deduplicatedResults.get(x).iterator().next()).sub(var(x));
                     } else {
                         return var(x).isa(deduplicatedResults.get(x).iterator().next().toString());
                     }
