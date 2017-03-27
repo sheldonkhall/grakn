@@ -80,7 +80,7 @@ public class TypeOptimiseTest {
 
         initialQuery = match(var("x").isa("movie").has("title", "Godfather"),
                 var("r").rel("actor","y").rel(var("a"),"x"),
-                var("c").isa("genre"),
+                var("c").isa("genre").has("name", "drama"),
                 var("f").rel(var("d"),"b").rel(var("e"),"c"));
         testExpandedQueryIsEquivalent(initialQuery);
     }
