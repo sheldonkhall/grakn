@@ -60,10 +60,28 @@ public class TypeOptimiseTest {
         initialQuery = match(var("x").isa("movie"), var("r").rel("actor","y").rel(var("a"),"x"));
         testExpandedQueryIsEquivalent(initialQuery);
 
-        initialQuery = match(var("x").isa("movie").has("title","Godfather"), var("r").rel("actor","y").rel(var("a"),"x"));
+        initialQuery = match(var("x").isa("movie").has("title", "Godfather"), var("r").rel("actor", "y").rel(var("a"),"x"));
         testExpandedQueryIsEquivalent(initialQuery);
 
-        initialQuery = match(var("x").isa(var("y")), var().rel("production-with-cast","x"));
+        initialQuery = match(var("x").isa(var("z")).has("title", "Godfather"), var("r").rel("actor","y").rel(var("a"),"x"));
+        testExpandedQueryIsEquivalent(initialQuery);
+
+        initialQuery = match(var("x").isa(var("y")), var().rel("production-with-cast", "x"));
+        testExpandedQueryIsEquivalent(initialQuery);
+
+        initialQuery = match(var("x").isa(var("y")));
+        testExpandedQueryIsEquivalent(initialQuery);
+
+        initialQuery = match(var("x").isa(var("y")),var("y"));
+        testExpandedQueryIsEquivalent(initialQuery);
+
+        initialQuery = match(var("a").isa("movie").has("title", "Godfather"), var("b").isa("movie").has("title", "Heat"));
+        testExpandedQueryIsEquivalent(initialQuery);
+
+        initialQuery = match(var("x").isa("movie").has("title", "Godfather"),
+                var("r").rel("actor","y").rel(var("a"),"x"),
+                var("c").isa("genre"),
+                var("f").rel(var("d"),"b").rel(var("e"),"c"));
         testExpandedQueryIsEquivalent(initialQuery);
     }
 
@@ -74,10 +92,10 @@ public class TypeOptimiseTest {
         List<Map<String, Concept>> results = initialQuery.withGraph(graph).execute();
         List<Map<String, Concept>> expandedResults = expandedQuery.withGraph(graph).execute();
 
-        System.out.println("initial results:");
-        printResults(results);
-        System.out.println("expanded results:");
-        printResults(expandedResults);
+//        System.out.println("initial results:");
+//        printResults(results);
+//        System.out.println("expanded results:");
+//        printResults(expandedResults);
 
         assertEquals(results.size(), expandedResults.size());
         results.forEach(result-> assertTrue(expandedResults.stream()
@@ -111,8 +129,12 @@ public class TypeOptimiseTest {
             // for each query obtain ALL the vars in a list and consider in turn
             // TODO: absorb this call into the disjunctive normal form method
             aVarAdmin.getVars().iterator().forEachRemaining(aVar -> {
-                // get type if it has been specified
-                getTypeVar(aVar, knownTypes).ifPresent(ontologyQuery::add);
+                // get type if it has been specified and is not a var itself
+                getTypeVar(aVar, knownTypes).ifPresent((typeVar) -> {
+                    if (typeVar.getTypeName().isPresent()) {
+                        ontologyQuery.add(typeVar);
+                    }
+                });
                 // if there is a relation property attached to the var it is a relation - current starting point
                 Optional<RelationProperty> relation = aVar.getProperty(RelationProperty.class);
                 if (relation.isPresent()) {
@@ -139,46 +161,58 @@ public class TypeOptimiseTest {
         System.out.println("known types:");
         knownTypes.stream().map(VarName::toString).collect(Collectors.toSet()).forEach(System.out::println);
 
-        // execute the ontology query
-        List<Map<String, Concept>> results = match(ontologyQuery).withGraph(graph).execute();
+        // execute the ontology query if there is anything to infer
+        //TODO: move this inside the disjunction loop
+        if (!ontologyQuery.isEmpty()) {
+            System.out.println("the ontology query is: "+match(ontologyQuery).toString());
+            List<Map<String, Concept>> results = match(ontologyQuery).withGraph(graph).execute();
 
-        // bundle results into sets to deduplicate
-        Map<VarName, Set<TypeName>> deduplicatedResults = new HashMap<>();
-        results.forEach(result -> {
-            result.forEach((varNameString, concept) -> {
-                VarName varName = VarName.of(varNameString);
-                if (!knownTypes.contains(varName)) {
-                    deduplicatedResults.computeIfAbsent(varName, (x)-> new HashSet<>()).add(concept.asType().getName());
-                }
-            });
-        });
-
-        System.out.println("found "+String.valueOf(deduplicatedResults.size())+" vars without types.");
-        System.out.println("options for these types are:");
-        deduplicatedResults.forEach((k,v)->System.out.println(k.toString()+' '+v.toString()));
-
-        // append types to the initial query
-        Set<Var> queryExtension = deduplicatedResults.keySet().stream()
-                .filter((x) -> deduplicatedResults.get(x).size() == 1)
-                .filter((x) -> !knownTypes.contains(x))
-                .map((x) -> {
-                    if (unknownRoles.contains(x)) {
-//                        return var(x).name(deduplicatedResults.get(x).iterator().next().toString());
-                        return var().name(deduplicatedResults.get(x).iterator().next()).sub(var(x));
-                    } else {
-                        return var(x).isa(deduplicatedResults.get(x).iterator().next().toString());
+            // bundle results into sets to deduplicate
+            Map<VarName, Set<TypeName>> deduplicatedResults = new HashMap<>();
+            results.forEach(result -> {
+                result.forEach((varNameString, concept) -> {
+                    VarName varName = VarName.of(varNameString);
+                    if (!knownTypes.contains(varName)) {
+                        deduplicatedResults.computeIfAbsent(varName, (x) -> new HashSet<>()).add(concept.asType().getName());
                     }
-                })
-                .collect(Collectors.toSet());
-        return match(and(and(initialPatterns), and(queryExtension)));
+                });
+            });
+
+            System.out.println("found " + String.valueOf(deduplicatedResults.size()) + " vars without types.");
+            System.out.println("options for these types are:");
+            deduplicatedResults.forEach((k, v) -> System.out.println(k.toString() + ' ' + v.toString()));
+
+            // append types to the initial query
+            Set<Var> queryExtension = deduplicatedResults.keySet().stream()
+                    .filter((x) -> deduplicatedResults.get(x).size() == 1)
+                    .filter((x) -> !knownTypes.contains(x))
+                    .map((x) -> {
+                        if (unknownRoles.contains(x)) {
+                            return var().name(deduplicatedResults.get(x).iterator().next()).sub(var(x));
+                        } else {
+                            return var(x).isa(deduplicatedResults.get(x).iterator().next().toString());
+                        }
+                    })
+                    .collect(Collectors.toSet());
+            return match(and(and(initialPatterns), and(queryExtension)));
+        } else {
+            System.out.println("No ontology query could be constructed.");
+            return initialQuery;
+        }
     }
 
     private Optional<VarAdmin> getTypeVar(VarAdmin aVar, Set<VarName> knownTypes) {
         Optional<IsaProperty> property = aVar.getProperty(IsaProperty.class);
         if (property.isPresent()) {
             VarName varName = aVar.getVarName();
-            knownTypes.add(varName);
-            return Optional.of(var(varName).name(property.get().getType().getTypeName().get()).admin());
+            Optional<TypeName> mightBeATypeName = property.get().getType().getTypeName();
+            // check if the type is known - if not just return
+            if (mightBeATypeName.isPresent()) {
+                knownTypes.add(varName);
+                return Optional.of(var(varName).name(mightBeATypeName.get()).admin());
+            } else {
+                return Optional.of(var(varName).admin());
+            }
         } else {
             return Optional.empty();
         }
