@@ -86,6 +86,8 @@ public class TypeOptimiseTest {
     }
 
     public void testExpandedQueryIsEquivalent(MatchQuery initialQuery) {
+        // need to see implicit types in query
+        graph.showImplicitConcepts(true);
         System.out.println("The initial query: "+initialQuery.toString());
         MatchQuery expandedQuery = generateOntologyQueryAndMap(initialQuery);
         System.out.println("The expanded query: "+expandedQuery.toString());
@@ -97,10 +99,17 @@ public class TypeOptimiseTest {
 //        System.out.println("expanded results:");
 //        printResults(expandedResults);
 
+        results.forEach(result -> {
+            boolean isEqual = expandedResults.stream()
+                    .map(expandedResult -> isUnionOfVarsEqual(result, expandedResult))
+                    .reduce(false, (a, b) -> a || b);
+            if (!isEqual) {
+                System.out.println("assertion failed on this result: ");
+                printResult(result);
+            }
+            assertTrue(isEqual);
+        });
         assertEquals(results.size(), expandedResults.size());
-        results.forEach(result-> assertTrue(expandedResults.stream()
-                .map(expandedResult -> isUnionOfVarsEqual(result, expandedResult))
-                .reduce(false, (a, b) -> a || b)));
     }
 
     private boolean isUnionOfVarsEqual(Map<String,Concept> result1, Map<String,Concept> result2) {
@@ -111,9 +120,13 @@ public class TypeOptimiseTest {
 
     private void printResults(List<Map<String,Concept>> results) {
         results.forEach(result -> {
-            result.forEach((k,v) -> System.out.print(" "+k+" "+v.toString()));
-            System.out.println();
+            printResult(result);
         });
+    }
+
+    private void printResult(Map<String,Concept> result) {
+        result.forEach((k,v) -> System.out.print(" "+k+" "+v.toString()));
+        System.out.println();
     }
 
     private MatchQuery generateOntologyQueryAndMap(MatchQuery initialQuery) {
