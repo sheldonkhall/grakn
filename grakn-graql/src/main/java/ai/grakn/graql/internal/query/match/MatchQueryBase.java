@@ -30,6 +30,7 @@ import ai.grakn.graql.admin.PatternAdmin;
 import ai.grakn.graql.admin.VarAdmin;
 import ai.grakn.graql.internal.gremlin.GraqlTraversal;
 import ai.grakn.graql.internal.gremlin.GreedyTraversalPlan;
+import ai.grakn.graql.internal.gremlin.TypeOptimisation;
 import ai.grakn.graql.internal.pattern.property.VarPropertyInternal;
 import ai.grakn.graql.internal.query.QueryAnswer;
 import ai.grakn.graql.internal.util.CommonUtil;
@@ -88,7 +89,8 @@ public class MatchQueryBase extends AbstractMatchQuery {
         for (VarAdmin var : pattern.getVars()) {
             var.getProperties().forEach(property -> ((VarPropertyInternal) property).checkValid(graph, var));}
 
-        GraqlTraversal graqlTraversal = GreedyTraversalPlan.createTraversal(pattern, graph);
+        PatternAdmin expandedPattern = TypeOptimisation.generateOntologyQueryAndMap(pattern, graph);
+        GraqlTraversal graqlTraversal = GreedyTraversalPlan.createTraversal(expandedPattern, graph);
         LOG.trace("Created query plan");
         LOG.trace(graqlTraversal.toString());
         GraphTraversal<Vertex, Map<String, Vertex>> traversal = graqlTraversal.getGraphTraversal(graph);
