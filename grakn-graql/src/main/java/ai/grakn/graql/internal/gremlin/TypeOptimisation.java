@@ -13,6 +13,9 @@ import ai.grakn.graql.admin.RelationPlayer;
 import ai.grakn.graql.admin.VarAdmin;
 import ai.grakn.graql.internal.pattern.property.IsaProperty;
 import ai.grakn.graql.internal.pattern.property.RelationProperty;
+import ai.grakn.graql.internal.query.match.MatchQueryBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,13 +34,14 @@ import static ai.grakn.graql.internal.pattern.Patterns.var;
  */
 public class TypeOptimisation {
 
+    protected static final Logger LOG = LoggerFactory.getLogger(MatchQueryBase.class);
+
     public static PatternAdmin generateOntologyQueryAndMap(Conjunction<PatternAdmin> initialPatterns, GraknGraph graph) {
         Set<Var> ontologyQuery = new HashSet<>();
         Set<VarName> knownTypes = new HashSet<>();
         Set<VarName> unknownRoles = new HashSet<>();
         // take the pattern and break into parts that can be executed independently
-//        MatchQueryAdmin initialQueryAdmin = initialQuery.admin();
-//        Conjunction<PatternAdmin> initialPatterns = initialQueryAdmin.getPattern();
+        //TODO: I think we can assume this is done in graql previous to the optimiser being called
         Disjunction<Conjunction<VarAdmin>> initialNormalForm = initialPatterns.getDisjunctiveNormalForm();
         // go through independent queries looking for types
         initialNormalForm.getPatterns().iterator().forEachRemaining(aVarAdmin -> {
@@ -73,13 +77,13 @@ public class TypeOptimisation {
             });
         });
 
-        System.out.println("known types:");
-        knownTypes.stream().map(VarName::toString).collect(Collectors.toSet()).forEach(System.out::println);
-
         // execute the ontology query if there is anything to infer
         //TODO: move this inside the disjunction loop
         if (!ontologyQuery.isEmpty()) {
-            System.out.println("the ontology query is: "+match(ontologyQuery).toString());
+            LOG.trace("the initial query is: " + initialPatterns.toString());
+            LOG.trace("known types:");
+            knownTypes.stream().map(VarName::toString).collect(Collectors.toSet()).forEach(LOG::trace);
+            LOG.trace("the ontology query is: " + match(ontologyQuery).toString());
             List<Map<String, Concept>> results = match(ontologyQuery).withGraph(graph).execute();
 
             // bundle results into sets to deduplicate
@@ -93,9 +97,9 @@ public class TypeOptimisation {
                 });
             });
 
-            System.out.println("found " + String.valueOf(deduplicatedResults.size()) + " vars without types.");
-            System.out.println("options for these types are:");
-            deduplicatedResults.forEach((k, v) -> System.out.println(k.toString() + ' ' + v.toString()));
+            LOG.trace("found " + String.valueOf(deduplicatedResults.size()) + " vars without types.");
+            LOG.trace("options for these types are:");
+            deduplicatedResults.forEach((k, v) -> LOG.trace(k.toString() + ' ' + v.toString()));
 
             // append types to the initial query
             Set<Var> queryExtension = deduplicatedResults.keySet().stream()
@@ -109,9 +113,11 @@ public class TypeOptimisation {
                         }
                     })
                     .collect(Collectors.toSet());
-            return and(and(initialPatterns), and(queryExtension)).admin();
+
+            PatternAdmin extendedPatterns = and(and(initialPatterns), and(queryExtension)).admin();
+            LOG.trace("the extended query is: "+extendedPatterns.toString());
+            return extendedPatterns;
         } else {
-            System.out.println("No ontology query could be constructed.");
             return initialPatterns;
         }
     }
