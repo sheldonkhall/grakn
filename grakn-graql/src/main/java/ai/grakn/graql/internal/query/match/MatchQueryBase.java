@@ -89,8 +89,9 @@ public class MatchQueryBase extends AbstractMatchQuery {
         for (VarAdmin var : pattern.getVars()) {
             var.getProperties().forEach(property -> ((VarPropertyInternal) property).checkValid(graph, var));}
 
-        PatternAdmin expandedPattern = TypeOptimisation.generateOntologyQueryAndMap(pattern, graph);
-        GraqlTraversal graqlTraversal = GreedyTraversalPlan.createTraversal(expandedPattern, graph);
+//        PatternAdmin expandedPattern = TypeOptimisation.generateOntologyQueryAndMap(pattern, graph);
+//        GraqlTraversal graqlTraversal = GreedyTraversalPlan.createTraversal(expandedPattern, graph);
+        GraqlTraversal graqlTraversal = GreedyTraversalPlan.createTraversal(pattern, graph);
         LOG.trace("Created query plan");
         LOG.trace(graqlTraversal.toString());
         GraphTraversal<Vertex, Map<String, Vertex>> traversal = graqlTraversal.getGraphTraversal(graph);

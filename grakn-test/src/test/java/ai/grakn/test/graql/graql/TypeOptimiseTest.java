@@ -1,14 +1,12 @@
 package ai.grakn.test.graql.graql;
 
 import ai.grakn.GraknGraph;
-import ai.grakn.concept.Concept;
-import ai.grakn.concept.TypeName;
+import ai.grakn.concept.TypeLabel;
 import ai.grakn.graphs.MovieGraph;
-import ai.grakn.graql.Graql;
 import ai.grakn.graql.MatchQuery;
-import ai.grakn.graql.Pattern;
 import ai.grakn.graql.Var;
 import ai.grakn.graql.VarName;
+import ai.grakn.graql.admin.Answer;
 import ai.grakn.graql.admin.Conjunction;
 import ai.grakn.graql.admin.Disjunction;
 import ai.grakn.graql.admin.MatchQueryAdmin;
@@ -22,14 +20,15 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
+
 
 import static ai.grakn.graql.Graql.and;
 import static ai.grakn.graql.Graql.match;
@@ -91,8 +90,8 @@ public class TypeOptimiseTest {
         System.out.println("The initial query: "+initialQuery.toString());
         MatchQuery expandedQuery = generateOntologyQueryAndMap(initialQuery);
         System.out.println("The expanded query: "+expandedQuery.toString());
-        List<Map<String, Concept>> results = initialQuery.withGraph(graph).execute();
-        List<Map<String, Concept>> expandedResults = expandedQuery.withGraph(graph).execute();
+        List<Answer> results = initialQuery.withGraph(graph).execute();
+        List<Answer> expandedResults = expandedQuery.withGraph(graph).execute();
 
 //        System.out.println("initial results:");
 //        printResults(results);
@@ -112,24 +111,24 @@ public class TypeOptimiseTest {
         assertEquals(results.size(), expandedResults.size());
     }
 
-    private boolean isUnionOfVarsEqual(Map<String,Concept> result1, Map<String,Concept> result2) {
+    private boolean isUnionOfVarsEqual(Answer result1, Answer result2) {
         return result1.entrySet().stream()
                 .map((x)-> result2.get(x.getKey())==x.getValue())
                 .reduce(true,(a,b)-> a & b);
     }
 
-    private void printResults(List<Map<String,Concept>> results) {
+    private void printResults(List<Answer> results) {
         results.forEach(result -> {
             printResult(result);
         });
     }
 
-    private void printResult(Map<String,Concept> result) {
+    private void printResult(Answer result) {
         result.forEach((k,v) -> System.out.print(" "+k+" "+v.toString()));
         System.out.println();
     }
 
-    private MatchQuery generateOntologyQueryAndMap(MatchQuery initialQuery) {
+    private <R> MatchQuery generateOntologyQueryAndMap(MatchQuery initialQuery) {
         Set<Var> ontologyQuery = new HashSet<>();
         Set<VarName> knownTypes = new HashSet<>();
         Set<VarName> unknownRoles = new HashSet<>();
@@ -144,7 +143,7 @@ public class TypeOptimiseTest {
             aVarAdmin.getVars().iterator().forEachRemaining(aVar -> {
                 // get type if it has been specified and is not a var itself
                 getTypeVar(aVar, knownTypes).ifPresent((typeVar) -> {
-                    if (typeVar.getTypeName().isPresent()) {
+                    if (typeVar.getTypeLabel().isPresent()) {
                         ontologyQuery.add(typeVar);
                     }
                 });
@@ -154,18 +153,17 @@ public class TypeOptimiseTest {
                     // get a var representing the relation type
                     VarAdmin relationTypeVar = getTypeVarOrDummy(aVar, knownTypes);
                     // cycle through role players to construct ontology query
-                    relation.get().getRelationPlayers().forEach(
-                        relationPlayer -> {
+                    List<RelationPlayer> relationPlayers = relation.get().getRelationPlayers().collect(Collectors.toCollection(ArrayList::new));
+                    for (RelationPlayer relationPlayer : relationPlayers) {
                             // get role type
                             VarAdmin roleTypeVar = getRoleTypeVar(relationPlayer, knownTypes, unknownRoles);
                             // get roleplayer type
                             VarAdmin rolePlayerType = getTypeVarOrDummy(relationPlayer.getRolePlayer(), knownTypes);
                             // put together an ontology query
-                            rolePlayerType.playsRole(roleTypeVar);
-                            relationTypeVar.hasRole(roleTypeVar);
+                            rolePlayerType = (VarAdmin) rolePlayerType.plays(roleTypeVar);
+                            relationTypeVar = (VarAdmin) relationTypeVar.relates(roleTypeVar);
                             ontologyQuery.add(rolePlayerType);
-                        }
-                    );
+                    }
                     ontologyQuery.add(relationTypeVar);
                 }
             });
@@ -178,15 +176,14 @@ public class TypeOptimiseTest {
         //TODO: move this inside the disjunction loop
         if (!ontologyQuery.isEmpty()) {
             System.out.println("the ontology query is: "+match(ontologyQuery).toString());
-            List<Map<String, Concept>> results = match(ontologyQuery).withGraph(graph).execute();
+            List<Answer> results = match(ontologyQuery).withGraph(graph).execute();
 
             // bundle results into sets to deduplicate
-            Map<VarName, Set<TypeName>> deduplicatedResults = new HashMap<>();
+            Map<VarName, Set<TypeLabel>> deduplicatedResults = new HashMap<>();
             results.forEach(result -> {
-                result.forEach((varNameString, concept) -> {
-                    VarName varName = VarName.of(varNameString);
+                result.forEach((varName, concept) -> {
                     if (!knownTypes.contains(varName)) {
-                        deduplicatedResults.computeIfAbsent(varName, (x) -> new HashSet<>()).add(concept.asType().getName());
+                        deduplicatedResults.computeIfAbsent(varName, (x) -> new HashSet<>()).add(concept.asType().getLabel());
                     }
                 });
             });
@@ -201,7 +198,7 @@ public class TypeOptimiseTest {
                     .filter((x) -> !knownTypes.contains(x))
                     .map((x) -> {
                         if (unknownRoles.contains(x)) {
-                            return var().name(deduplicatedResults.get(x).iterator().next()).sub(var(x));
+                            return var().label(deduplicatedResults.get(x).iterator().next()).sub(var(x));
                         } else {
                             return var(x).isa(deduplicatedResults.get(x).iterator().next().toString());
                         }
@@ -218,11 +215,11 @@ public class TypeOptimiseTest {
         Optional<IsaProperty> property = aVar.getProperty(IsaProperty.class);
         if (property.isPresent()) {
             VarName varName = aVar.getVarName();
-            Optional<TypeName> mightBeATypeName = property.get().getType().getTypeName();
+            Optional<TypeLabel> mightBeATypeLabel = property.get().getType().getTypeLabel();
             // check if the type is known - if not just return
-            if (mightBeATypeName.isPresent()) {
+            if (mightBeATypeLabel.isPresent()) {
                 knownTypes.add(varName);
-                return Optional.of(var(varName).name(mightBeATypeName.get()).admin());
+                return Optional.of(var(varName).label(mightBeATypeLabel.get()).admin());
             } else {
                 return Optional.of(var(varName).admin());
             }
@@ -244,7 +241,7 @@ public class TypeOptimiseTest {
         Optional<VarAdmin> aRole = relationPlayer.getRoleType();
         if (aRole.isPresent()) {
             VarAdmin roleTypeVar = aRole.get();
-            Optional<TypeName> mightBeVar = roleTypeVar.getTypeName();
+            Optional<TypeLabel> mightBeVar = roleTypeVar.getTypeLabel();
             if (mightBeVar.isPresent()) {
                 knownTypes.add(roleTypeVar.getVarName());
             } else {

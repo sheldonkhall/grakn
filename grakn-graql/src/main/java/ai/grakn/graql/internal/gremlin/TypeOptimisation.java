@@ -1,11 +1,10 @@
 package ai.grakn.graql.internal.gremlin;
 
 import ai.grakn.GraknGraph;
-import ai.grakn.concept.Concept;
-import ai.grakn.concept.TypeName;
-import ai.grakn.graql.MatchQuery;
+import ai.grakn.concept.TypeLabel;
 import ai.grakn.graql.Var;
 import ai.grakn.graql.VarName;
+import ai.grakn.graql.admin.Answer;
 import ai.grakn.graql.admin.Conjunction;
 import ai.grakn.graql.admin.Disjunction;
 import ai.grakn.graql.admin.PatternAdmin;
@@ -50,7 +49,7 @@ public class TypeOptimisation {
             aVarAdmin.getVars().iterator().forEachRemaining(aVar -> {
                 // get type if it has been specified and is not a var itself
                 getTypeVar(aVar, knownTypes).ifPresent((typeVar) -> {
-                    if (typeVar.getTypeName().isPresent()) {
+                    if (typeVar.getTypeLabel().isPresent()) {
                         ontologyQuery.add(typeVar);
                     }
                 });
@@ -67,8 +66,8 @@ public class TypeOptimisation {
                                 // get roleplayer type
                                 VarAdmin rolePlayerType = getTypeVarOrDummy(relationPlayer.getRolePlayer(), knownTypes);
                                 // put together an ontology query
-                                rolePlayerType.playsRole(roleTypeVar);
-                                relationTypeVar.hasRole(roleTypeVar);
+                                rolePlayerType.plays(roleTypeVar);
+                                relationTypeVar.relates(roleTypeVar);
                                 ontologyQuery.add(rolePlayerType);
                             }
                     );
@@ -84,15 +83,14 @@ public class TypeOptimisation {
             LOG.trace("known types:");
             knownTypes.stream().map(VarName::toString).collect(Collectors.toSet()).forEach(LOG::trace);
             LOG.trace("the ontology query is: " + match(ontologyQuery).toString());
-            List<Map<String, Concept>> results = match(ontologyQuery).withGraph(graph).execute();
+            List<Answer> results = match(ontologyQuery).withGraph(graph).execute();
 
             // bundle results into sets to deduplicate
-            Map<VarName, Set<TypeName>> deduplicatedResults = new HashMap<>();
+            Map<VarName, Set<TypeLabel>> deduplicatedResults = new HashMap<>();
             results.forEach(result -> {
-                result.forEach((varNameString, concept) -> {
-                    VarName varName = VarName.of(varNameString);
+                result.forEach((varName, concept) -> {
                     if (!knownTypes.contains(varName)) {
-                        deduplicatedResults.computeIfAbsent(varName, (x) -> new HashSet<>()).add(concept.asType().getName());
+                        deduplicatedResults.computeIfAbsent(varName, (x) -> new HashSet<>()).add(concept.asType().getLabel());
                     }
                 });
             });
@@ -107,7 +105,7 @@ public class TypeOptimisation {
                     .filter((x) -> !knownTypes.contains(x))
                     .map((x) -> {
                         if (unknownRoles.contains(x)) {
-                            return var().name(deduplicatedResults.get(x).iterator().next()).sub(var(x));
+                            return var().label(deduplicatedResults.get(x).iterator().next()).sub(var(x));
                         } else {
                             return var(x).isa(deduplicatedResults.get(x).iterator().next().toString());
                         }
@@ -126,11 +124,11 @@ public class TypeOptimisation {
         Optional<IsaProperty> property = aVar.getProperty(IsaProperty.class);
         if (property.isPresent()) {
             VarName varName = aVar.getVarName();
-            Optional<TypeName> mightBeATypeName = property.get().getType().getTypeName();
+            Optional<TypeLabel> mightBeATypeName = property.get().getType().getTypeLabel();
             // check if the type is known - if not just return
             if (mightBeATypeName.isPresent()) {
                 knownTypes.add(varName);
-                return Optional.of(var(varName).name(mightBeATypeName.get()).admin());
+                return Optional.of(var(varName).label(mightBeATypeName.get()).admin());
             } else {
                 return Optional.of(var(varName).admin());
             }
@@ -152,7 +150,7 @@ public class TypeOptimisation {
         Optional<VarAdmin> aRole = relationPlayer.getRoleType();
         if (aRole.isPresent()) {
             VarAdmin roleTypeVar = aRole.get();
-            Optional<TypeName> mightBeVar = roleTypeVar.getTypeName();
+            Optional<TypeLabel> mightBeVar = roleTypeVar.getTypeLabel();
             if (mightBeVar.isPresent()) {
                 knownTypes.add(roleTypeVar.getVarName());
             } else {
