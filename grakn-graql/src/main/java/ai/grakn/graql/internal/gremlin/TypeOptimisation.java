@@ -16,6 +16,7 @@ import ai.grakn.graql.internal.query.match.MatchQueryBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,18 +60,17 @@ public class TypeOptimisation {
                     // get a var representing the relation type
                     VarAdmin relationTypeVar = getTypeVarOrDummy(aVar, knownTypes);
                     // cycle through role players to construct ontology query
-                    relation.get().getRelationPlayers().forEach(
-                            relationPlayer -> {
-                                // get role type
-                                VarAdmin roleTypeVar = getRoleTypeVar(relationPlayer, knownTypes, unknownRoles);
-                                // get roleplayer type
-                                VarAdmin rolePlayerType = getTypeVarOrDummy(relationPlayer.getRolePlayer(), knownTypes);
-                                // put together an ontology query
-                                rolePlayerType.plays(roleTypeVar);
-                                relationTypeVar.relates(roleTypeVar);
-                                ontologyQuery.add(rolePlayerType);
-                            }
-                    );
+                    List<RelationPlayer> relationPlayers = relation.get().getRelationPlayers().collect(Collectors.toCollection(ArrayList::new));
+                    for (RelationPlayer relationPlayer : relationPlayers) {
+                        // get role type
+                        VarAdmin roleTypeVar = getRoleTypeVar(relationPlayer, knownTypes, unknownRoles);
+                        // get roleplayer type
+                        VarAdmin rolePlayerType = getTypeVarOrDummy(relationPlayer.getRolePlayer(), knownTypes);
+                        // put together an ontology query
+                        rolePlayerType = (VarAdmin) rolePlayerType.plays(roleTypeVar);
+                        relationTypeVar = (VarAdmin) relationTypeVar.relates(roleTypeVar);
+                        ontologyQuery.add(rolePlayerType);
+                    }
                     ontologyQuery.add(relationTypeVar);
                 }
             });
