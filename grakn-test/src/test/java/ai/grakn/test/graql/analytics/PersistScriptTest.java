@@ -112,11 +112,11 @@ public class PersistScriptTest {
 //        persistClusterAndDegrees("together",Sets.newHashSet("product","bought-together"));
 //    }
 //
-//    @Test
-//    public void testPersistAll() {
-//        persistClusterAndDegrees("all",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
-//    }
-//
+    @Test
+    public void testPersistAll() {
+        persistClusterAndDegrees("all",Sets.newHashSet("product","also-viewed","also-bought","bought-together"));
+    }
+
     @Test
     public void testPersistCategory() {
         persistClusterAndDegrees("category-groups",Sets.newHashSet("category","hierarchy"));
@@ -161,7 +161,7 @@ public class PersistScriptTest {
         VarPattern clusterSubEntityType = var().sub("cluster").label(clusterName);
         putVar(clusterSubEntityType);
 
-        insertEntityOntology(clusterName, subGraph);
+//        insertEntityOntology(clusterName, subGraph);
         int minClusterSize = 3;
 
         // insert clusters without members
@@ -177,10 +177,10 @@ public class PersistScriptTest {
         }
 
         // relate members of clusters
-        try (GraknGraph graknGraph = graknSession.open(GraknTxType.WRITE)) {
-            result.forEach((clusterId, memberIds) -> {
-                Set<InsertQuery> clusterInsert = new HashSet<>();
-                if (memberIds.size() >= minClusterSize) {
+        result.forEach((clusterId, memberIds) -> {
+            Set<InsertQuery> clusterInsert = new HashSet<>();
+            if (memberIds.size() >= minClusterSize) {
+                try (GraknGraph graknGraph = graknSession.open(GraknTxType.WRITE)) {
                     memberIds.forEach(memberId -> {
                         String thisConcept = "thisConcept";
                         String thisCluster = "thisCluster";
@@ -198,8 +198,8 @@ public class PersistScriptTest {
                     });
                     graknGraph.commit();
                 }
-            });
-        }
+            }
+        });
         System.out.println(result);
 
     }
