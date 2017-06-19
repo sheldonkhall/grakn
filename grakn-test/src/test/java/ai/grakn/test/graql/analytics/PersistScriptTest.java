@@ -211,7 +211,7 @@ public class PersistScriptTest {
         }
 
         String degreeResourceType = "degree";
-        insertResourceOntology(Sets.newHashSet(entityName), degreeResourceType, ResourceType.DataType.LONG);
+//        insertResourceOntology(Sets.newHashSet(entityName), degreeResourceType, ResourceType.DataType.LONG);
 
         result.forEach((degree, memberIds) -> {
             Set<InsertQuery> degreeInsert = new HashSet<>();
